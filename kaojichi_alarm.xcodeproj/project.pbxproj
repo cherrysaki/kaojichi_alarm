@@ -7,10 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6F3B22742F6067DF00FBE484 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B22732F6067DF00FBE484 /* FirebaseAppCheck */; };
 		6F3B22762F6067DF00FBE484 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B22752F6067DF00FBE484 /* FirebaseAuth */; };
 		6F3B22782F6067DF00FBE484 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B22772F6067DF00FBE484 /* FirebaseCore */; };
-		6F3B227A2F6067DF00FBE484 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B22792F6067DF00FBE484 /* FirebaseDatabase */; };
 		6F3B227C2F6067DF00FBE484 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B227B2F6067DF00FBE484 /* FirebaseFirestore */; };
 		6F3B227E2F6067DF00FBE484 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B227D2F6067DF00FBE484 /* FirebaseStorage */; };
 		6F3B22812F60685F00FBE484 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B22802F60685F00FBE484 /* Kingfisher */; };
@@ -33,10 +31,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6F3B22742F6067DF00FBE484 /* FirebaseAppCheck in Frameworks */,
 				6F3B22782F6067DF00FBE484 /* FirebaseCore in Frameworks */,
 				6F3B22812F60685F00FBE484 /* Kingfisher in Frameworks */,
-				6F3B227A2F6067DF00FBE484 /* FirebaseDatabase in Frameworks */,
 				6F3B227C2F6067DF00FBE484 /* FirebaseFirestore in Frameworks */,
 				6F3B22762F6067DF00FBE484 /* FirebaseAuth in Frameworks */,
 				6F3B227E2F6067DF00FBE484 /* FirebaseStorage in Frameworks */,
@@ -82,10 +78,8 @@
 			);
 			name = kaojichi_alarm;
 			packageProductDependencies = (
-				6F3B22732F6067DF00FBE484 /* FirebaseAppCheck */,
 				6F3B22752F6067DF00FBE484 /* FirebaseAuth */,
 				6F3B22772F6067DF00FBE484 /* FirebaseCore */,
-				6F3B22792F6067DF00FBE484 /* FirebaseDatabase */,
 				6F3B227B2F6067DF00FBE484 /* FirebaseFirestore */,
 				6F3B227D2F6067DF00FBE484 /* FirebaseStorage */,
 				6F3B22802F60685F00FBE484 /* Kingfisher */,
@@ -281,7 +275,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6TY78LCT9T;
+				DEVELOPMENT_TEAM = 6HY8YSMK7C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -295,7 +289,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.kambayashi.yukke.kaojichi-alarm";
+				PRODUCT_BUNDLE_IDENTIFIER = "app.kambayashi.hirakei.kaojichi-alarm";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -314,7 +308,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6TY78LCT9T;
+				DEVELOPMENT_TEAM = 6HY8YSMK7C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -328,7 +322,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.kambayashi.yukke.kaojichi-alarm";
+				PRODUCT_BUNDLE_IDENTIFIER = "app.kambayashi.hirakei.kaojichi-alarm";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -383,11 +377,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		6F3B22732F6067DF00FBE484 /* FirebaseAppCheck */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6F3B22722F6067DF00FBE484 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAppCheck;
-		};
 		6F3B22752F6067DF00FBE484 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 6F3B22722F6067DF00FBE484 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
@@ -397,11 +386,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6F3B22722F6067DF00FBE484 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCore;
-		};
-		6F3B22792F6067DF00FBE484 /* FirebaseDatabase */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6F3B22722F6067DF00FBE484 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseDatabase;
 		};
 		6F3B227B2F6067DF00FBE484 /* FirebaseFirestore */ = {
 			isa = XCSwiftPackageProductDependency;
