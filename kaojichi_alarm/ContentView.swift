@@ -1,24 +1,145 @@
 //
 //  ContentView.swift
-//  kaojichi_alarm
+//  picture_alarm_app
 //
-//  Created by 神林沙希 on 2026/03/06.
+//  Created by tanaka niko on 2025/09/12.
 //
 
 import SwiftUI
+import SwiftData
+import FirebaseAuth
 
 struct ContentView: View {
+    
+    @StateObject var alarmService = AlarmService.shared
+    
+    @State var isShowAlermStartView: Bool = false
+    @State var isShowPopover: Bool = true
+    
+    @State var wakeuptime = ""
+    @State var leaveTime = ""
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        
+        ZStack{
+            TabView {
+                
+                TLView()
+                    .tabItem {
+                        
+                        Image(systemName: "house")
+                        Text("タイムライン")
+                        
+                    }
+                AlermView()
+                    .tabItem {
+                        Image(systemName: "deskclock")
+                        Text("アラーム")
+                    }
+                ProfileView()
+                    .tabItem {
+                        Image(systemName: "person.crop.circle.fill")
+                        Text("プロフィール")
+                    }
+                
+                //            AlarmStartView()
+                //                .tabItem {
+                //                    Image(systemName: "camera.circle.fill")
+                //                    Text("プロフィール")
+                //                }
+            }
+            .tint(Color(hex: "FF8300"))
+            .navigationBarBackButtonHidden(true)
+            VStack{
+                Spacer()
+                Button{
+                    isShowAlermStartView = true
+                }label:{
+                    Image(systemName: "camera")
+                        .resizable()
+                        .foregroundStyle(.white)
+                        .scaledToFit()
+                        .scaleEffect(0.5)
+                        .frame(width: 50, height: 50)
+                        .background(.orange)
+                        .clipShape(Circle())
+                    
+                    
+                }
+                .padding(.bottom, 75) // 下から30ポイント上に配置
+                
+//                .popover(isPresented: .constant(true)) {
+//                    popoverView
+//                        .presentationCompactAdaptation(PresentationAdaptation.popover)
+//                        .offset(y: -75)
+//                }
+            }
+            
+        }
+        .fullScreenCover(isPresented: $isShowAlermStartView){
+            AlarmStartView()
+        }
+        .onAppear{
+//            if alarmService.isWakeupnow && alarmService.currentAlarm != nil{
+//                
+//                
+//                
+//            } else if !alarmService.isWakeupnow && alarmService.currentAlarm != nil{
+//                
+//                
+//            }else{
+//                
+//                isShowPopover = false
+//            }
+        }
+        
+        
+    }
+    
+    var popoverView: some View {
+        
+        
+        
+        VStack{
+//            if alarmService.isWakeupnow && alarmService.currentAlarm != nil{
+//                Text("出発時刻")
+//                Text(wakeuptime)
+//                
+//                
+//            } else if !alarmService.isWakeupnow && alarmService.currentAlarm != nil{
+//                
+//                Text("起床時間")
+//                Text(leaveTime)
+//                
+//            }else{
+//                Text("アラームが設定されていないよ！")
+//                //                isShowAlermStartView = false
+//            }r
+        }.onAppear{
+            settime()
         }
         .padding()
+        
+        
     }
+    
+    private func settime() {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH時mm分"
+        
+        if let current = alarmService.currentAlarm {
+            wakeuptime = dateFormatter.string(from: current.wakeUpTime)
+            leaveTime  = dateFormatter.string(from: current.leaveTime)
+        } else {
+            wakeuptime = "--:--"
+            leaveTime  = "--:--"
+        }
+    }
+    
+    
 }
 
 #Preview {
     ContentView()
+    
 }

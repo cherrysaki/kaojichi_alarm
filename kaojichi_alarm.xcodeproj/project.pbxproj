@@ -6,6 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E4A339C92F5C069300F9714A /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = E4A339C82F5C069300F9714A /* FirebaseAuth */; };
+		E4A339CB2F5C069300F9714A /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = E4A339CA2F5C069300F9714A /* FirebaseFirestore */; };
+		E4A339CD2F5C069300F9714A /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = E4A339CC2F5C069300F9714A /* FirebaseStorage */; };
+		E4A339D02F5C06BE00F9714A /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = E4A339CF2F5C06BE00F9714A /* Kingfisher */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		E453E8C52F5AA9C2005C84EB /* kaojichi_alarm.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kaojichi_alarm.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +30,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E4A339D02F5C06BE00F9714A /* Kingfisher in Frameworks */,
+				E4A339C92F5C069300F9714A /* FirebaseAuth in Frameworks */,
+				E4A339CB2F5C069300F9714A /* FirebaseFirestore in Frameworks */,
+				E4A339CD2F5C069300F9714A /* FirebaseStorage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +76,10 @@
 			);
 			name = kaojichi_alarm;
 			packageProductDependencies = (
+				E4A339C82F5C069300F9714A /* FirebaseAuth */,
+				E4A339CA2F5C069300F9714A /* FirebaseFirestore */,
+				E4A339CC2F5C069300F9714A /* FirebaseStorage */,
+				E4A339CF2F5C06BE00F9714A /* Kingfisher */,
 			);
 			productName = kaojichi_alarm;
 			productReference = E453E8C52F5AA9C2005C84EB /* kaojichi_alarm.app */;
@@ -94,6 +109,12 @@
 			);
 			mainGroup = E453E8BC2F5AA9C2005C84EB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E453E9432F5AAD84005C84EB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				E4A339CE2F5C06BE00F9714A /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				E4A33A4D2F5C0BC300F9714A /* XCRemoteSwiftPackageReference "protobuf" */,
+				E4A33A4E2F5C0CC900F9714A /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E453E8C62F5AA9C2005C84EB /* Products */;
 			projectDirPath = "";
@@ -261,6 +282,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -293,6 +315,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -332,6 +355,64 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E453E9432F5AAD84005C84EB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.10.0;
+			};
+		};
+		E4A339CE2F5C06BE00F9714A /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.8.0;
+			};
+		};
+		E4A33A4D2F5C0BC300F9714A /* XCRemoteSwiftPackageReference "protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/protocolbuffers/protobuf/";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		E4A33A4E2F5C0CC900F9714A /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.35.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E4A339C82F5C069300F9714A /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E453E9432F5AAD84005C84EB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		E4A339CA2F5C069300F9714A /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E453E9432F5AAD84005C84EB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		E4A339CC2F5C069300F9714A /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E453E9432F5AAD84005C84EB /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+		E4A339CF2F5C06BE00F9714A /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4A339CE2F5C06BE00F9714A /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E453E8BD2F5AA9C2005C84EB /* Project object */;
 }
