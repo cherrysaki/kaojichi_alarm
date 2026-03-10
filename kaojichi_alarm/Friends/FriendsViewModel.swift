@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseAuth
+import Combine
 
 @MainActor
 class FriendsViewModel: ObservableObject {

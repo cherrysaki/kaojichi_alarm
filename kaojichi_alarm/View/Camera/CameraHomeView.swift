@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UIKit
+import SceneKit
 
 struct CameraHomeView: View {
     @StateObject private var alarmService: AlarmService = .shared

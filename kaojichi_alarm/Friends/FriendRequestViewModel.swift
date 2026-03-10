@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseAuth
 import FirebaseCore
+import Combine
 
 // Viewが使いやすいように、申請情報と申請者の情報を組み合わせた構造体
 struct FriendRequestInfo: Identifiable {

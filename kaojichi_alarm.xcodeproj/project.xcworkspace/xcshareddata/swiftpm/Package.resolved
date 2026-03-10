@@ -1,5 +1,5 @@
 {
-  "originHash" : "dacfd17cdf8fa9f962991925a9162eb62e278dab4974c56cd997ab2b87892aa5",
+  "originHash" : "3070b8fac9c73247cbef0a5cf9e2152e192c5788c4a081a0d3e6cc9237872176",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -22,7 +22,7 @@
     {
       "identity" : "firebase-ios-sdk",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/firebase/firebase-ios-sdk",
+      "location" : "https://github.com/firebase/firebase-ios-sdk.git",
       "state" : {
         "revision" : "85560b48b0ff099ad83fe53d67df3c67fbc2b7a6",
         "version" : "12.10.0"
@@ -94,7 +94,7 @@
     {
       "identity" : "kingfisher",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/onevcat/Kingfisher",
+      "location" : "https://github.com/onevcat/Kingfisher.git",
       "state" : {
         "revision" : "c92b84898e34ab46ff0dad86c02a0acbe2d87008",
         "version" : "8.8.0"
