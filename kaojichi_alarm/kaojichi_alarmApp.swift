@@ -9,7 +9,6 @@ import SwiftUI
 import FirebaseCore
 import SwiftData
 import BackgroundTasks
-
 // =======================
 // 共有の ModelContainer (SwiftData)
 // =======================

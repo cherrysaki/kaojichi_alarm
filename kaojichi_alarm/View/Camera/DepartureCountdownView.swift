@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import Combine
+import SceneKit
 
 struct DepartureCountdownView: View {
     let departureTime: Date                // 出発時刻

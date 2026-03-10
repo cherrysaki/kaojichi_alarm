@@ -8,6 +8,7 @@
 import SwiftUI
 import FirebaseFirestore
 import FirebaseAuth
+import Combine
 
 class PostListViewModel: ObservableObject {
     @Published var posts: [PostInfo] = []

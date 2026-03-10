@@ -1,0 +1,26 @@
+# Firebase
+GoogleService-Info.plist
+
+# Xcode user-specific files
+xcuserdata/
+*.xcuserstate
+
+# Build products
+DerivedData/
+.build/
+
+# Swift Package Manager
+.swiftpm/
+Package.resolved
+
+# macOS
+.DS_Store
+
+# Optional: fastlane screenshots / reports
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+
+# Optional: logs
+*.log
