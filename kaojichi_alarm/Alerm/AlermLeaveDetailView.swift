@@ -12,11 +12,10 @@ struct AlermLeaveDetailView: View {
     @Binding var wakeUpTime: Date
     @Binding var leaveTime: Date
     @Binding var isShowLeaveDetailView: Bool
-    @Binding var alarmStatus:alarmStatus
-    @Binding var selectedDate:Date
+    @Binding var alarmStatus: alarmStatus
+    @Binding var selectedDate: Date
     @Environment(\.dismiss) private var dismiss
     
-//    @State private var selectedDate = Date()
     private let calendar = Calendar.current
     
     var body: some View {
@@ -24,6 +23,7 @@ struct AlermLeaveDetailView: View {
             Text("出発時間を設定")
                 .font(.headline)
                 .foregroundColor(.white)
+            
             DatePicker(
                 "",
                 selection: $leaveTime,
@@ -38,34 +38,31 @@ struct AlermLeaveDetailView: View {
             .padding(.bottom, 32)
             
             HStack(spacing: 16) {
-                Button("保存") {
+                Button {
                     saveAlarm()
-                    isShowLeaveDetailView = false
+                } label: {
+                    Text("保存")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(Color(hex: "FF8300"))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color(hex: "FF8300"))
-                .cornerRadius(12)
-                .foregroundColor(.white)
-                .padding(.bottom, 16)
+                .contentShape(Rectangle())
             }
             .padding(.horizontal, 16)
-            .padding(.bottom, 32)
+            .padding(.bottom, 48)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.black)
         .presentationDetents([.fraction(0.75)])
         .presentationDragIndicator(.visible)
         .onAppear {
-//            setupInitialDate()
             requestNotificationAuthorization()
         }
     }
     
-    
-    
-    // --- ロジックはそのまま保持 ---
-//    private func setupInitialDate() { selectedDate = Date() }
     private func saveAlarm() {
         print(selectedDate)
         
@@ -86,8 +83,8 @@ struct AlermLeaveDetailView: View {
         print("DEBUG: if文の直前のselectedDateの値 -> \(selectedDate)")
         
         if combinedDate <= combinedLeaveTime {
-            if  Calendar.current.isDate(selectedDate, inSameDayAs: Date()) {
-                if let alarms =  AlarmService.shared.getAlarm(for: selectedDate){
+            if Calendar.current.isDate(selectedDate, inSameDayAs: Date()) {
+                if let alarms = AlarmService.shared.getAlarm(for: selectedDate) {
                     AlarmService.shared.updateAlarm(
                         id: alarms.id,
                         date: selectedDate,
@@ -96,33 +93,34 @@ struct AlermLeaveDetailView: View {
                         isOn: true
                     )
                 } else {
-
-//                    wakeUpTime = combinedDate
-//                    leaveTime = combinedLeaveTime
-                    
-                    AlarmService.shared.addAlarm(date: selectedDate, wakeUpTime: combinedDate, leaveTime: combinedLeaveTime, isOn: true)
+                    AlarmService.shared.addAlarm(
+                        date: selectedDate,
+                        wakeUpTime: combinedDate,
+                        leaveTime: combinedLeaveTime,
+                        isOn: true
+                    )
                 }
                 
                 let background = BackgroundTasks()
-                
                 background.scheduleDepaturePostSetup()
                 
                 print("a")
             } else {
-                if let alarms =  AlarmService.shared.getAlarm(for: selectedDate){
+                if let alarms = AlarmService.shared.getAlarm(for: selectedDate) {
                     AlarmService.shared.updateAlarm(
                         id: alarms.id,
                         date: selectedDate,
                         wakeUpTime: combinedDate,
                         leaveTime: combinedLeaveTime,
-                        isOn:false
+                        isOn: false
                     )
                 } else {
-                    var newAlarm :AlarmData?
-                    newAlarm?.date = selectedDate
-                    newAlarm?.wakeUpTime = combinedDate
-                    newAlarm?.leaveTime = combinedLeaveTime
-                    AlarmService.shared.addAlarm(date: selectedDate, wakeUpTime: combinedDate, leaveTime: combinedLeaveTime,isOn: false)
+                    AlarmService.shared.addAlarm(
+                        date: selectedDate,
+                        wakeUpTime: combinedDate,
+                        leaveTime: combinedLeaveTime,
+                        isOn: false
+                    )
                 }
                 
                 print("b")
@@ -130,21 +128,21 @@ struct AlermLeaveDetailView: View {
             
             alarmStatus = .setted
             
-            print(AlarmService.shared.getAlarm(for: selectedDate)?.date)
-            print(AlarmService.shared.getAlarm(for: selectedDate)?.wakeUpTime)
-            print(AlarmService.shared.getAlarm(for: selectedDate)?.leaveTime)
-
-        } else{
+            print(AlarmService.shared.getAlarm(for: selectedDate)?.date as Any)
+            print(AlarmService.shared.getAlarm(for: selectedDate)?.wakeUpTime as Any)
+            print(AlarmService.shared.getAlarm(for: selectedDate)?.leaveTime as Any)
+        } else {
             alarmStatus = .error
         }
-
         
-        print(AlarmService.shared.getAlarm(for: selectedDate))
+        print(AlarmService.shared.getAlarm(for: selectedDate) as Any)
         
         dismiss()
-
     }
+    
     private func requestNotificationAuthorization() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _,_ in }
+        UNUserNotificationCenter.current().requestAuthorization(
+            options: [.alert, .sound, .badge]
+        ) { _, _ in }
     }
 }
