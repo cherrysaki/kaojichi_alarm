@@ -45,8 +45,8 @@ struct TutorialView: View {
             imageName: nil
         ),
         TutorialPage(
-            title: "時間通りに出発しましょう",
-            description: "寝起き顔を公開されたくない人は、\n時間通りの出発を目指しましょう。\n\n\n利用にはカメラの許可が必要です。",
+            title: "準備を始めましょう",
+            description: "",
             imageName: nil
         )
     ]
@@ -181,14 +181,13 @@ struct TutorialView: View {
 
     private var penaltyPageView: some View {
         VStack(spacing: 28) {
-            
             Image(systemName: "exclamationmark.triangle.fill")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 90, height: 90)
-                .foregroundColor(.orange)
-        
-            Text("寝起き姿が\n投稿されます")
+                .frame(width: 80, height: 80)
+                .foregroundColor(.white)
+            
+            Text("寝起きで撮影した写真が\n投稿されます")
                 .font(.system(size: 34, weight: .bold))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.orange)
@@ -198,32 +197,25 @@ struct TutorialView: View {
                 .multilineTextAlignment(.center)
                 .foregroundColor(.white)
                 .lineSpacing(6)
-
         }
     }
 
     private var finalPageView: some View {
-        VStack(spacing: 28) {
-            
+        VStack(spacing: 35) {
             Image(systemName: "camera.fill")
-                .font(.system(size: 36))
+                .font(.system(size: 80))
                 .foregroundColor(.orange)
             
-            Text("時間通りに\n出発しましょう")
+            Text("準備を始めましょう")
                 .font(.system(size: 34, weight: .bold))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.white)
 
-            Text("寝起き顔を公開されたくない人は、\n時間通りの出発を目指しましょう。")
-                .font(.system(size: 18))
-                .multilineTextAlignment(.center)
-                .foregroundColor(.white.opacity(0.9))
-                .lineSpacing(6)
-            
-                Text("利用にはカメラの許可が必要です")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.white)
-        
+//            Text("このあと、カメラと通知の設定を行います。")
+//                .font(.system(size: 18))
+//                .multilineTextAlignment(.center)
+//                .foregroundColor(.white.opacity(0.9))
+//                .lineSpacing(6)
         }
     }
 }
@@ -231,3 +223,4 @@ struct TutorialView: View {
 #Preview {
     TutorialView()
 }
+
