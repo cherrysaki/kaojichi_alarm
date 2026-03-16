@@ -202,14 +202,14 @@ struct TutorialView: View {
 
     private var finalPageView: some View {
         VStack(spacing: 35) {
-            Image(systemName: "camera.fill")
+            Image(systemName: "clock.fill")
                 .font(.system(size: 80))
-                .foregroundColor(.orange)
+                .foregroundColor(.white)
             
-            Text("準備を始めましょう")
+            Text("寝起き顔を守るために\n時間通りに\n出発しましょう！")
                 .font(.system(size: 34, weight: .bold))
                 .multilineTextAlignment(.center)
-                .foregroundColor(.white)
+                .foregroundColor(.orange)
 
 //            Text("このあと、カメラと通知の設定を行います。")
 //                .font(.system(size: 18))
