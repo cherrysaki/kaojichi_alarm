@@ -206,8 +206,8 @@ struct TutorialView: View {
                 .font(.system(size: 80))
                 .foregroundColor(.white)
             
-            Text("寝起き顔を守るために\n時間通りに\n出発しましょう！")
-                .font(.system(size: 34, weight: .bold))
+            Text("寝起き顔を守るために\n時間通りに出発しましょう！")
+                .font(.system(size: 28, weight: .bold))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.orange)
 
