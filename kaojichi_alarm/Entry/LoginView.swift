@@ -7,185 +7,185 @@
 
 import SwiftUI
 import FirebaseAuth
+import FirebaseFirestore
 import FirebaseAuthEasier
 
 struct LoginView: View {
-//    @State private var email = ""
-//    @State private var password = ""
-//    @State private var errorMessage = ""
-//    @State private var isLoggedIn: Bool = false
-//    @State private var isLoading = false
     @StateObject private var viewModel = LoginViewModel()
-    
+    @StateObject private var socialAuthViewModel: FirebaseAuthViewModel
+    @State private var socialAuthError = ""
+
     var onSuccess: (() -> Void)? = nil
-    
+
+    init(onSuccess: (() -> Void)? = nil) {
+        self.onSuccess = onSuccess
+        // didSignInコールバックでソーシャルログイン成功時の処理を行う
+        let vm = FirebaseAuthViewModel(
+            providers: [.apple, .google],
+            didSignIn: { result in
+                switch result {
+                case .success(let authDataResult):
+                    let user = authDataResult.user
+                    // Firestoreにユーザー情報を保存（初回ログイン時のみ）
+                    Task {
+                        do {
+                            let existingUser = try await UserService.shared.fetchUser(withId: user.uid)
+                            if existingUser == nil {
+                                try await UserService.shared.saveUser(
+                                    authData: user,
+                                    name: user.displayName ?? "ユーザー"
+                                )
+                            }
+                        } catch {
+                            print("ソーシャルログイン後のユーザー保存エラー: \(error.localizedDescription)")
+                        }
+                    }
+                case .failure(let error):
+                    print("ソーシャルログインエラー: \(error.localizedDescription)")
+                }
+            }
+        )
+        _socialAuthViewModel = StateObject(wrappedValue: vm)
+    }
+
     var body: some View {
-        ZStack{
-//            Color.black
-//                .ignoresSafeArea()
-            FirebaseAuthView()
-            
-//            NavigationStack {
-//                VStack(spacing: 20) {
-//                    //                    Text("ログイン")
-//                    //                        .font(.title)
-//                    //                        .foregroundStyle(.white)
-//                    HStack{
-//                        Text(" Email")
-//                            .foregroundStyle(.white)
-//                            .font(.system(size:24))
-//                            .bold()
-//                        Spacer()
-//                    }
-//                    TextField("", text: $viewModel.email)
-//                        .padding(12)
-//                        .background(Color(hex: "6A6A6A"))
-//                        .cornerRadius(10)
-//                        .foregroundColor(.white)
-//                        .textInputAutocapitalization(.never)
-//                        .keyboardType(.emailAddress)
-//                        .autocapitalization(.none)
-//
-//                    HStack{
-//                        Text(" パスワード")
-//                            .foregroundStyle(.white)
-//                            .font(.system(size:24))
-//                            .bold()
-//                        Spacer ()
-//                    }
-//                    SecureField("", text: $viewModel.password)
-//                        .padding(12)
-//                        .background(Color(hex: "6A6A6A"))
-//                        .cornerRadius(10)
-//                        .foregroundColor(.white)
-//                        .textInputAutocapitalization(.never)
-//                        .padding(.bottom, 80)
-//                    
-//                    Button(action: viewModel.login) {
-//                        if viewModel.isLoading {
-//                            // --- ローディング中 ---
-//                            HStack {
-//                                ProgressView()
-//                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-//                                Text("ログイン中")
-//                                    .foregroundColor(.white)
-//                                    .fontWeight(.semibold)
-//                            }
-//                            .frame(maxWidth: .infinity)
-//                            .padding()
-//                            .background(Color.orange) // オレンジ背景
-//                            .cornerRadius(10)
-//                        } else if viewModel.email.isEmpty || viewModel.password.isEmpty {
-//                            // --- 未入力 ---
-//                            Text("ログイン")
-//                                .fontWeight(.semibold)
-//                                .foregroundColor(.black) // 黒文字
-//                                .frame(maxWidth: .infinity)
-//                                .padding()
-//                                .background(Color.white)
-//                                .cornerRadius(10)
-//                        } else {
-//                            // --- 入力済み ---
-//                            Text("ログイン")
-//                                .fontWeight(.semibold)
-//                                .foregroundColor(.white) // 白文字
-//                                .frame(maxWidth: .infinity)
-//                                .padding()
-//                                .background(Color.orange) // オレンジ背景
-//                                .cornerRadius(10)
-//                        }
-//                    }
-//                    .disabled(viewModel.email.isEmpty || viewModel.password.isEmpty || viewModel.isLoading)
-//                    // --- エラーメッセージ ---
-//                    if !viewModel.errorMessage.isEmpty {
-//                        Text(viewModel.errorMessage)
-//                            .foregroundColor(.red)
-//                    }
-//                }
-//                    
-//                    //                    Button(action: viewModel.login) {
-//                    //                        if viewModel.isLoading {
-//                    //                            ProgressView()
-//                    //                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-//                    //                                .frame(maxWidth: .infinity)
-//                    //                                .padding()
-//                    //                        } else {
-//                    //                            Text("ログインする")
-//                    //                                .fontWeight(.semibold)
-//                    //                                .foregroundColor(.black)
-//                    //                                .frame(maxWidth: .infinity)
-//                    //                                .padding()
-//                    //                                .background(Color.white)
-//                    //                                .cornerRadius(8)
-//                    //                        }
-//                    //                    }
-//                    //                    .background(Color.white)
-//                    //                    .cornerRadius(8)
-//                    //
-//                    //                    .padding()
-//                    //                    .background(viewModel.email.isEmpty || viewModel.password.isEmpty || viewModel.isLoading ? Color.gray : Color.blue)
-//                    //                    .cornerRadius(8)
-//                    //                    .disabled(viewModel.email.isEmpty || viewModel.password.isEmpty || viewModel.isLoading)
-//                    //
-//                    //                    if !viewModel.errorMessage.isEmpty {
-//                    //                        Text(viewModel.errorMessage)
-//                    //                            .foregroundColor(.red)
-//                    //                    }
-//                    //                }
-//                    
-//                        .padding()
-//                        .navigationTitle("ログイン")
-//                        .navigationBarTitleDisplayMode(.inline)
-//                        .toolbar {
-//                            ToolbarItem(placement: .principal) {
-//                                Text("ログイン")
-//                                    .font(.headline)
-//                                    .foregroundColor(.white)
-//                            }
-//                        }
-//                        .tint(.white)
-//                        .onChange(of: viewModel.isLoginSuccessful){ success in
-//                            if success{
-//                                onSuccess?()
-//                            }
-//                }
-//            }
+        ZStack {
+            Color.black
+                .ignoresSafeArea()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("メールアドレス")
+                                .foregroundStyle(.white)
+                                .font(.headline)
+
+                            TextField("メールアドレス", text: $viewModel.email)
+                                .padding(12)
+                                .background(Color.white.opacity(0.1))
+                                .cornerRadius(10)
+                                .foregroundColor(.white)
+                                .textInputAutocapitalization(.never)
+                        }
+
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("パスワード")
+                                .foregroundStyle(.white)
+                                .font(.headline)
+
+                            SecureField("パスワード", text: $viewModel.password)
+                                .padding(12)
+                                .background(Color.white.opacity(0.1))
+                                .cornerRadius(10)
+                                .foregroundColor(.white)
+                                .textInputAutocapitalization(.never)
+                        }
+
+                        Spacer()
+
+                        VStack(spacing: 12) {
+                            Text("別の方法でログイン")
+                                .foregroundStyle(.white)
+
+                            if socialAuthViewModel.isSigningIn {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            } else {
+                                HStack(spacing: 24) {
+                                    SignInButton(
+                                        provider: .apple,
+                                        buttonStyle: .black,
+                                        labelStyle: .iconOnly,
+                                        labelType: .signIn,
+                                        cornerStyle: .radius(20),
+                                        hasBorder: true
+                                    ) {
+                                        socialAuthViewModel.handleSignIn(provider: .apple)
+                                    }
+                                    .frame(width: 60, height: 60)
+
+                                    SignInButton(
+                                        provider: .google,
+                                        buttonStyle: .black,
+                                        labelStyle: .iconOnly,
+                                        labelType: .signIn,
+                                        cornerStyle: .radius(20),
+                                        hasBorder: true
+                                    ) {
+                                        socialAuthViewModel.handleSignIn(provider: .google)
+                                    }
+                                    .frame(width: 60, height: 60)
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+
+                        Spacer()
+                        Spacer()
+
+                        Button(action: viewModel.login) {
+                            if viewModel.isLoading {
+                                HStack {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    Text("ログイン中")
+                                        .foregroundColor(.white)
+                                }
+                            } else {
+                                Text("ログイン")
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.orange)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        .disabled(viewModel.isLoading)
+
+                        if !viewModel.errorMessage.isEmpty {
+                            Text(viewModel.errorMessage)
+                                .foregroundColor(.red)
+                                .bold()
+                        }
+
+                        if !socialAuthError.isEmpty {
+                            Text(socialAuthError)
+                                .foregroundColor(.red)
+                                .bold()
+                        }
+                    }
+                    .padding()
+                }
+                .padding(.horizontal, 16)
+                .background(Color.black.ignoresSafeArea())
+                .navigationTitle("ログイン")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Text("ログイン")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                    }
+                }
+                .tint(.white)
+            .onChange(of: viewModel.isLoginSuccessful) { _, success in
+                if success {
+                    onSuccess?()
+                }
+            }
+            .onChange(of: socialAuthViewModel.lastSignInResult != nil) { _, hasResult in
+                if hasResult {
+                    if case .success = socialAuthViewModel.lastSignInResult {
+                        onSuccess?()
+                    } else if case .failure(let error) = socialAuthViewModel.lastSignInResult {
+                        socialAuthError = error.localizedDescription
+                    }
+                }
+            }
         }
     }
 }
 
-//    private func login() {
-//            isLoading = true
-//            errorMessage = ""
-//            
-//            Auth.auth().signIn(withEmail: email, password: password) { result, error in
-//                isLoading = false
-//                
-//                if let error = error {
-//                    // エラーを日本語に変換
-//                    errorMessage = localizedAuthError(error)
-//                    return
-//                }
-//                
-//                // ログイン成功
-//                onSuccess?()
-//            }
-//        }
-//        
-//        private func localizedAuthError(_ error: Error) -> String {
-//            let nsError = error as NSError
-//            switch AuthErrorCode(rawValue: nsError.code) {
-//            case .invalidEmail:
-//                return "メールアドレスの形式が正しくありません"
-//            case .userNotFound:
-//                return "アカウントが存在しません"
-//            case .wrongPassword:
-//                return "パスワードが間違っています"
-//            default:
-//                return "ログインに失敗しました: \(error.localizedDescription)"
-//            }
-//        }
-//    }
 #Preview {
     LoginView()
 }

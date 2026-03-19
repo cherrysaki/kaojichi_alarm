@@ -32,6 +32,7 @@ class LoginViewModel: ObservableObject {
             }
         }
     }
+    
     private func localizedAuthError(_ error: Error) -> String {
             let nsError = error as NSError
             switch AuthErrorCode(rawValue: nsError.code) {

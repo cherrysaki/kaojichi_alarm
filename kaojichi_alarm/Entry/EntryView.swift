@@ -18,7 +18,12 @@ struct EntryView: View {
         NavigationStack {
             VStack(spacing: 80) {
                 Spacer()
-                Text("寝顔人質カメラ")
+                Image("kaojichi_logo")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 160, height: 160)
+                    .clipped()
+                Text("顔質アラーム")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
