@@ -124,7 +124,7 @@ struct TutorialView: View {
                 .fontWeight(.bold)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.orange)
+                .background(Color.themeOrange)
                 .foregroundColor(.white)
                 .cornerRadius(14)
                 .padding(.horizontal, 24)
@@ -190,7 +190,7 @@ struct TutorialView: View {
             Text("寝起きで撮影した写真が\n投稿されます")
                 .font(.system(size: 34, weight: .bold))
                 .multilineTextAlignment(.center)
-                .foregroundColor(.orange)
+                .foregroundColor(.themeOrange)
 
             Text("出発時刻までに投稿できなかった場合、\n寝起きの写真が自動で投稿されます。")
                 .font(.system(size: 18))
@@ -209,7 +209,7 @@ struct TutorialView: View {
             Text("寝起き顔を守るために\n時間通りに\n出発しましょう！")
                 .font(.system(size: 34, weight: .bold))
                 .multilineTextAlignment(.center)
-                .foregroundColor(.orange)
+                .foregroundColor(.themeOrange)
 
 //            Text("このあと、カメラと通知の設定を行います。")
 //                .font(.system(size: 18))

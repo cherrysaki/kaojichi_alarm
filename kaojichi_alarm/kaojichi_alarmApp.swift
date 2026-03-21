@@ -75,11 +75,11 @@ struct YourApp: App {
         tabAppearance.backgroundColor = tabColor
         
         let normalAttrs: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor.white]
-        let selectedAttrs: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor(Color(hex: "FF8300"))]
+        let selectedAttrs: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor(Color.themeOrange)]
         
         tabAppearance.stackedLayoutAppearance.normal.iconColor = .white
         tabAppearance.stackedLayoutAppearance.normal.titleTextAttributes = normalAttrs
-        tabAppearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color(hex: "FF8300"))
+        tabAppearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.themeOrange)
         tabAppearance.stackedLayoutAppearance.selected.titleTextAttributes = selectedAttrs
         tabAppearance.inlineLayoutAppearance = tabAppearance.stackedLayoutAppearance
         tabAppearance.compactInlineLayoutAppearance = tabAppearance.stackedLayoutAppearance
@@ -114,3 +114,4 @@ struct YourApp: App {
 //        }
 //    }
 //}
+
