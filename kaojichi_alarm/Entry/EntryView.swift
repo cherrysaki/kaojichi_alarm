@@ -30,7 +30,7 @@ struct EntryView: View {
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .padding(.bottom, 30)
-                Text("ログインまたはアカウント作成")
+//                Text("ログインまたはアカウント作成")
                     .foregroundStyle(.white)
                     .font(.system(size: 18))
                     .padding(.bottom, 10)

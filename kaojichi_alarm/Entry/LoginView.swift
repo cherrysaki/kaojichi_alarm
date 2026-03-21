@@ -85,18 +85,18 @@ struct LoginView: View {
                         Spacer()
 
                         VStack(spacing: 12) {
-                            Text("別の方法でログイン")
-                                .foregroundStyle(.white)
+//                            Text("別の方法でログイン")
+//                                .foregroundStyle(.white)
 
                             if socialAuthViewModel.isSigningIn {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
-                                HStack(spacing: 24) {
+                                VStack(spacing: 24) {
                                     SignInButton(
                                         provider: .apple,
                                         buttonStyle: .black,
-                                        labelStyle: .iconOnly,
+                                        labelStyle: .titleAndIcon,
                                         labelType: .signIn,
                                         cornerStyle: .radius(20),
                                         hasBorder: true
@@ -108,7 +108,7 @@ struct LoginView: View {
                                     SignInButton(
                                         provider: .google,
                                         buttonStyle: .black,
-                                        labelStyle: .iconOnly,
+                                        labelStyle: .titleAndIcon,
                                         labelType: .signIn,
                                         cornerStyle: .radius(20),
                                         hasBorder: true

@@ -98,8 +98,8 @@ struct SignUpView: View {
                         
 
                         VStack(spacing: 12) {
-                            Text("別の方法でログイン")
-                                .foregroundStyle(.white)
+//                            Text("別の方法でログイン")
+//                                .foregroundStyle(.white)
 
                             if socialAuthViewModel.isSigningIn {
                                 ProgressView()
