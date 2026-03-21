@@ -11,7 +11,8 @@ import FirebaseFirestore
 import FirebaseAuthEasier
 
 struct LoginView: View {
-    @StateObject private var viewModel = LoginViewModel()
+    // メールアドレス/パスワードログイン廃止のためコメントアウト
+//    @StateObject private var viewModel = LoginViewModel()
     @StateObject private var socialAuthViewModel: FirebaseAuthViewModel
     @State private var socialAuthError = ""
 
@@ -54,31 +55,32 @@ struct LoginView: View {
                 .ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("メールアドレス")
-                                .foregroundStyle(.white)
-                                .font(.headline)
-
-                            TextField("メールアドレス", text: $viewModel.email)
-                                .padding(12)
-                                .background(Color.white.opacity(0.1))
-                                .cornerRadius(10)
-                                .foregroundColor(.white)
-                                .textInputAutocapitalization(.never)
-                        }
-
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("パスワード")
-                                .foregroundStyle(.white)
-                                .font(.headline)
-
-                            SecureField("パスワード", text: $viewModel.password)
-                                .padding(12)
-                                .background(Color.white.opacity(0.1))
-                                .cornerRadius(10)
-                                .foregroundColor(.white)
-                                .textInputAutocapitalization(.never)
-                        }
+                        // メールアドレス/パスワードログインUI廃止のためコメントアウト
+//                        VStack(alignment: .leading, spacing: 12) {
+//                            Text("メールアドレス")
+//                                .foregroundStyle(.white)
+//                                .font(.headline)
+//
+//                            TextField("メールアドレス", text: $viewModel.email)
+//                                .padding(12)
+//                                .background(Color.white.opacity(0.1))
+//                                .cornerRadius(10)
+//                                .foregroundColor(.white)
+//                                .textInputAutocapitalization(.never)
+//                        }
+//
+//                        VStack(alignment: .leading, spacing: 12) {
+//                            Text("パスワード")
+//                                .foregroundStyle(.white)
+//                                .font(.headline)
+//
+//                            SecureField("パスワード", text: $viewModel.password)
+//                                .padding(12)
+//                                .background(Color.white.opacity(0.1))
+//                                .cornerRadius(10)
+//                                .foregroundColor(.white)
+//                                .textInputAutocapitalization(.never)
+//                        }
 
                         Spacer()
 
@@ -122,31 +124,32 @@ struct LoginView: View {
                         Spacer()
                         Spacer()
 
-                        Button(action: viewModel.login) {
-                            if viewModel.isLoading {
-                                HStack {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    Text("ログイン中")
-                                        .foregroundColor(.white)
-                                }
-                            } else {
-                                Text("ログイン")
-                                    .foregroundColor(.white)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.orange)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                        .disabled(viewModel.isLoading)
-
-                        if !viewModel.errorMessage.isEmpty {
-                            Text(viewModel.errorMessage)
-                                .foregroundColor(.red)
-                                .bold()
-                        }
+                        // メールアドレス/パスワードログイン導線廃止のためコメントアウト
+//                        Button(action: viewModel.login) {
+//                            if viewModel.isLoading {
+//                                HStack {
+//                                    ProgressView()
+//                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+//                                    Text("ログイン中")
+//                                        .foregroundColor(.white)
+//                                }
+//                            } else {
+//                                Text("ログイン")
+//                                    .foregroundColor(.white)
+//                            }
+//                        }
+//                        .frame(maxWidth: .infinity)
+//                        .padding()
+//                        .background(Color.orange)
+//                        .foregroundColor(.white)
+//                        .cornerRadius(10)
+//                        .disabled(viewModel.isLoading)
+//
+//                        if !viewModel.errorMessage.isEmpty {
+//                            Text(viewModel.errorMessage)
+//                                .foregroundColor(.red)
+//                                .bold()
+//                        }
 
                         if !socialAuthError.isEmpty {
                             Text(socialAuthError)
@@ -168,11 +171,12 @@ struct LoginView: View {
                     }
                 }
                 .tint(.white)
-            .onChange(of: viewModel.isLoginSuccessful) { _, success in
-                if success {
-                    onSuccess?()
-                }
-            }
+            // メールアドレス/パスワードログイン廃止のためコメントアウト
+//            .onChange(of: viewModel.isLoginSuccessful) { _, success in
+//                if success {
+//                    onSuccess?()
+//                }
+//            }
             .onChange(of: socialAuthViewModel.lastSignInResult != nil) { _, hasResult in
                 if hasResult {
                     if case .success = socialAuthViewModel.lastSignInResult {

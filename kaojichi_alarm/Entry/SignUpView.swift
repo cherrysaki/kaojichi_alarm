@@ -11,9 +11,9 @@ import FirebaseFirestore
 import FirebaseAuthEasier
 
 struct SignUpView: View {
-    @StateObject private var viewModel = SignUpViewModel()
+    // メールアドレス/パスワード新規登録廃止のためコメントアウト
+//    @StateObject private var viewModel = SignUpViewModel()
     @StateObject private var socialAuthViewModel: FirebaseAuthViewModel
-    @State private var passwordConfirm = ""
     @State private var socialAuthError = ""
 
     // サインアップ成功時に親ビューに通知するためのクロージャ
@@ -55,44 +55,44 @@ struct SignUpView: View {
                 .ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
-                        
-                            Text("ユーザー情報")
-                                .foregroundStyle(.white)
-                                .font(.headline)
-
-                            TextField("ユーザー名", text: $viewModel.displayName)
-                                .padding(12)
-                                .background(Color.white.opacity(0.1))
-                                .cornerRadius(10)
-                                .foregroundColor(.white)
-                                .textInputAutocapitalization(.never)
-
-                            TextField("メールアドレス", text: $viewModel.email)
-                                .padding(12)
-                                .background(Color.white.opacity(0.1))
-                                .cornerRadius(10)
-                                .foregroundColor(.white)
-                                .textInputAutocapitalization(.never)
-
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("パスワード")
-                                .foregroundStyle(.white)
-                                .font(.headline)
-
-                            SecureField("パスワード(6文字以上)", text: $viewModel.password)
-                                .padding(12)
-                                .background(Color.white.opacity(0.1))
-                                .cornerRadius(10)
-                                .foregroundColor(.white)
-                                .textInputAutocapitalization(.never)
-
-                            SecureField("パスワードの確認", text: $passwordConfirm)
-                                .padding(12)
-                                .background(Color.white.opacity(0.1))
-                                .cornerRadius(10)
-                                .foregroundColor(.white)
-                                .textInputAutocapitalization(.never)
-                        }
+                        // メールアドレス/パスワード新規登録UI廃止のためコメントアウト
+//                        Text("ユーザー情報")
+//                            .foregroundStyle(.white)
+//                            .font(.headline)
+//
+//                        TextField("ユーザー名", text: $viewModel.displayName)
+//                            .padding(12)
+//                            .background(Color.white.opacity(0.1))
+//                            .cornerRadius(10)
+//                            .foregroundColor(.white)
+//                            .textInputAutocapitalization(.never)
+//
+//                        TextField("メールアドレス", text: $viewModel.email)
+//                            .padding(12)
+//                            .background(Color.white.opacity(0.1))
+//                            .cornerRadius(10)
+//                            .foregroundColor(.white)
+//                            .textInputAutocapitalization(.never)
+//
+//                        VStack(alignment: .leading, spacing: 12) {
+//                            Text("パスワード")
+//                                .foregroundStyle(.white)
+//                                .font(.headline)
+//
+//                            SecureField("パスワード(6文字以上)", text: $viewModel.password)
+//                                .padding(12)
+//                                .background(Color.white.opacity(0.1))
+//                                .cornerRadius(10)
+//                                .foregroundColor(.white)
+//                                .textInputAutocapitalization(.never)
+//
+//                            SecureField("パスワードの確認", text: $passwordConfirm)
+//                                .padding(12)
+//                                .background(Color.white.opacity(0.1))
+//                                .cornerRadius(10)
+//                                .foregroundColor(.white)
+//                                .textInputAutocapitalization(.never)
+//                        }
                         
                         Spacer()
                         
@@ -137,26 +137,27 @@ struct SignUpView: View {
                         Spacer()
                         Spacer()
 
-                        Button("作成") {
-                            Task {
-                                if viewModel.password != passwordConfirm {
-                                    viewModel.message = "パスワードが一致しません"
-                                    return
-                                }
-                                await viewModel.register()
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.orange)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-
-                        if !viewModel.message.isEmpty {
-                            Text(viewModel.message)
-                                .foregroundColor(.red)
-                                .bold()
-                        }
+                        // メールアドレス/パスワード新規登録導線廃止のためコメントアウト
+//                        Button("作成") {
+//                            Task {
+//                                if viewModel.password != passwordConfirm {
+//                                    viewModel.message = "パスワードが一致しません"
+//                                    return
+//                                }
+//                                await viewModel.register()
+//                            }
+//                        }
+//                        .frame(maxWidth: .infinity)
+//                        .padding()
+//                        .background(Color.orange)
+//                        .foregroundColor(.white)
+//                        .cornerRadius(10)
+//
+//                        if !viewModel.message.isEmpty {
+//                            Text(viewModel.message)
+//                                .foregroundColor(.red)
+//                                .bold()
+//                        }
 
                         if !socialAuthError.isEmpty {
                             Text(socialAuthError)
@@ -179,11 +180,12 @@ struct SignUpView: View {
                 }
                 .tint(.white)
 
-            .onChange(of: viewModel.isSignUpSuccessful){ _, success in
-                if success {
-                    onSuccess?()
-                }
-            }
+            // メールアドレス/パスワード新規登録廃止のためコメントアウト
+//            .onChange(of: viewModel.isSignUpSuccessful){ _, success in
+//                if success {
+//                    onSuccess?()
+//                }
+//            }
             .onChange(of: socialAuthViewModel.lastSignInResult != nil) { _, hasResult in
                 if hasResult {
                     if case .success = socialAuthViewModel.lastSignInResult {
