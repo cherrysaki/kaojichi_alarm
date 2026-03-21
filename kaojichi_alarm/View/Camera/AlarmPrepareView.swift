@@ -13,62 +13,101 @@ struct AlarmPrepareView: View {
     
     @State var wakeupTimeText = ""
     @State var leaveTimeText = ""
-    
     @State var isAlarmStart = false
+    @State private var isShowAlarmSettingView = false
     
     var body: some View {
-        VStack{
+        ZStack {
+            Color.black
+                .ignoresSafeArea()
             
-            if alarmService.currentAlarm!.isWakeup && !alarmService.currentAlarm!.isLeave {
-                    
-                    DepartureCountdownView(departureTime:  alarmService.currentAlarm!.leaveTime, wakeUpImage: UIImage(systemName: "house"))
-                    
-                   
-
-            } else if !alarmService.currentAlarm!.isWakeup{
-                
-                CameraViewWrapper()
-                
-            }else{
-                Text("アラームが設定されていないよ！")
+            VStack {
+                if let currentAlarm = alarmService.currentAlarm {
+                    if currentAlarm.isWakeup && !currentAlarm.isLeave {
+                        DepartureCountdownView(
+                            departureTime: currentAlarm.leaveTime,
+                            wakeUpImage: UIImage(systemName: "house")
+                        )
+                    } else if !currentAlarm.isWakeup {
+                        CameraViewWrapper()
+                    } else {
+                        noAlarmView
+                    }
+                } else {
+                    noAlarmView
+                }
             }
-            
-            
-        }.onAppear{
-            
+        }
+        .sheet(isPresented: $isShowAlarmSettingView) {
+            AlermView()
+        }
+        .onAppear {
             alarmService.fetchAlarms()
             
-            //当日のアラームが設定されていなかったらアラーム待機画面にしない
-            if alarmService.getTodayAlarm() == nil{
+            if alarmService.getTodayAlarm() == nil {
                 alarmService.isAlarmOn = false
-            }else{
+            } else {
                 alarmService.isAlarmOn = true
                 
-                alarmService.updateAlarmStatus(id: alarmService.currentAlarm!.id, isOn: true, isWakeup: false, isLeave: false)
-                
+                if let currentAlarm = alarmService.currentAlarm {
+                    alarmService.updateAlarmStatus(
+                        id: currentAlarm.id,
+                        isOn: true,
+                        isWakeup: false,
+                        isLeave: false
+                    )
+                }
             }
-            UserDefaults.standard.set(alarmService.isAlarmOn, forKey: "isAlarmOn")
             
+            UserDefaults.standard.set(alarmService.isAlarmOn, forKey: "isAlarmOn")
             
             let formatter = DateFormatter()
             formatter.dateStyle = .none
             formatter.timeStyle = .medium
             
-            
             if let currentAlarm = alarmService.currentAlarm {
-                
-                wakeupTimeText = formatter.string(for: currentAlarm.wakeUpTime)!
-                leaveTimeText = formatter.string(for: currentAlarm.leaveTime)!
-                
+                wakeupTimeText = formatter.string(for: currentAlarm.wakeUpTime) ?? ""
+                leaveTimeText = formatter.string(for: currentAlarm.leaveTime) ?? ""
             }
-            
-            
-            
-            
-            
         }
     }
     
+    private var noAlarmView: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            
+            Image(systemName: "alarm")
+                .font(.system(size: 52))
+                .foregroundColor(.orange)
+            
+            Text("アラームが設定されていません")
+                .font(.title3.weight(.semibold))
+                .foregroundColor(.white)
+            
+            Text("起床時間と出発時間を設定して、\nアラームを始めましょう")
+                .font(.body)
+                .foregroundColor(.white.opacity(0.7))
+                .multilineTextAlignment(.center)
+            
+            Button {
+                isShowAlarmSettingView = true
+            } label: {
+                Text("アラームを設定する")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(Color(hex: "FF8300"))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 8)
+            
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black)
+    }
 }
 
 #Preview {

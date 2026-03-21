@@ -19,22 +19,9 @@
 		E453E8C52F5AA9C2005C84EB /* kaojichi_alarm.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kaojichi_alarm.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E4A33BBC2F63BA5500F9714A /* Exceptions for "kaojichi_alarm" folder in "kaojichi_alarm" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"kaojichi-alarm-Info.plist",
-			);
-			target = E453E8C42F5AA9C2005C84EB /* kaojichi_alarm */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E453E8C72F5AA9C2005C84EB /* kaojichi_alarm */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E4A33BBC2F63BA5500F9714A /* Exceptions for "kaojichi_alarm" folder in "kaojichi_alarm" target */,
-			);
 			path = kaojichi_alarm;
 			sourceTree = "<group>";
 		};
@@ -294,10 +281,11 @@
 				CODE_SIGN_ENTITLEMENTS = kaojichi_alarm/kaojichi_alarm.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V4AXAW7D47;
+				DEVELOPMENT_TEAM = 24NW965W29;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "kaojichi-alarm-Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "起床時と出発時の写真を撮影するためにカメラを使用します。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -309,7 +297,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.kambayashi.hirakei.kaojichi-alarm";
+				PRODUCT_BUNDLE_IDENTIFIER = "app.kambayashi.hirakei.sakai..kaojichi-alarm";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -329,10 +317,11 @@
 				CODE_SIGN_ENTITLEMENTS = kaojichi_alarm/kaojichi_alarm.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V4AXAW7D47;
+				DEVELOPMENT_TEAM = 24NW965W29;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "kaojichi-alarm-Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "起床時と出発時の写真を撮影するためにカメラを使用します。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -344,7 +333,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.kambayashi.hirakei.kaojichi-alarm";
+				PRODUCT_BUNDLE_IDENTIFIER = "app.kambayashi.hirakei.sakai..kaojichi-alarm";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;

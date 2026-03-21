@@ -70,11 +70,22 @@ struct AlermDetailView: View {
                     .foregroundColor(.white)
                 }
                 
+//                ToolbarItem(placement: .navigationBarTrailing) {
+//                    Button("保存") {
+//                        saveAlarm()
+//                    }
+//                    .foregroundColor(.white)
+//                }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("保存") {
+                    Button {
                         saveAlarm()
+                    } label: {
+                        Text("保存")
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .contentShape(Rectangle())
                     }
-                    .foregroundColor(.white)
                 }
             }
             .toolbarBackground(Color.black, for: .navigationBar)

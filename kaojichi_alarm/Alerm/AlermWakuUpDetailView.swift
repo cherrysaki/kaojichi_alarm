@@ -38,15 +38,29 @@ struct AlermWakuUpDetailView: View {
             .padding(.bottom, 32)
             
             HStack(spacing: 16) {
-                Button("保存") {
+//                Button("保存") {
+//                    saveAlarm()
+//                    isShowWakuUpDetailView = false
+//                }
+//                .frame(maxWidth: .infinity)
+//                .padding()
+//                .background(Color(hex: "FF8300"))
+//                .cornerRadius(12)
+//                .foregroundColor(.white)
+//                .padding(.bottom, 60)
+                Button {
                     saveAlarm()
                     isShowWakuUpDetailView = false
+                } label: {
+                    Text("保存")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(Color(hex: "FF8300"))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .contentShape(Rectangle())
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color(hex: "FF8300"))
-                .cornerRadius(12)
-                .foregroundColor(.white)
                 .padding(.bottom, 60)
             }
             .padding(.horizontal, 16)
