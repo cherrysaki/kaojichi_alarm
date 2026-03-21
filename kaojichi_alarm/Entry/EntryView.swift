@@ -6,13 +6,42 @@
 //
 
 import SwiftUI
+import FirebaseAuthEasier
 import FirebaseAuth
 
 
 struct EntryView: View {
-    @State private var navigateToLogin = false
-    @State private var navigateToSignUp = false
-    @State private var navigateToContent = false
+    @StateObject private var socialAuthViewModel: FirebaseAuthViewModel
+    @State private var socialAuthError = ""
+
+    init() {
+        let vm = FirebaseAuthViewModel(
+            providers: [.apple, .google],
+            didSignIn: { result in
+                switch result {
+                case .success(let authDataResult):
+                    let user = authDataResult.user
+
+                    Task {
+                        do {
+                            let existingUser = try await UserService.shared.fetchUser(withId: user.uid)
+                            if existingUser == nil {
+                                try await UserService.shared.saveUser(
+                                    authData: user,
+                                    name: user.displayName ?? "ユーザー"
+                                )
+                            }
+                        } catch {
+                            print("EntryViewからのソーシャルログイン後のユーザー保存エラー: \(error.localizedDescription)")
+                        }
+                    }
+                case .failure(let error):
+                    print("EntryViewからのソーシャルログインエラー: \(error.localizedDescription)")
+                }
+            }
+        )
+        _socialAuthViewModel = StateObject(wrappedValue: vm)
+    }
     
     var body: some View {
         NavigationStack {
@@ -36,31 +65,38 @@ struct EntryView: View {
                     .padding(.bottom, 10)
                 
                 VStack(spacing: 20) {
-                    // ログイン
-                    NavigationLink(destination: LoginView(onSuccess: {
-                        self.navigateToContent = true
-                    }), isActive: $navigateToLogin) {
-                        Text("ログイン")
-                            .font(.headline)
-                            .foregroundColor(.white)
+                    if socialAuthViewModel.isSigningIn {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(hex: "FF8300"))
-                            .cornerRadius(12)
-                    }
-                    
-                    // サインアップ
-                    NavigationLink(destination: SignUpView(onSuccess: {
-                        self.navigateToContent = true
-                    }), isActive: $navigateToSignUp) {
-                        Text("アカウント作成")
-                            .font(.headline)
-                            .foregroundColor(.black)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            .padding(.bottom, 15)
+                            .padding(.vertical, 24)
+                    } else {
+                        SignInButton(
+                            provider: .apple,
+                            buttonStyle: .black,
+                            labelStyle: .titleAndIcon,
+                            labelType: .continue,
+                            cornerStyle: .radius(12),
+                            hasBorder: true
+                        ) {
+                            socialAuthError = ""
+                            socialAuthViewModel.handleSignIn(provider: .apple)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: 60)
+
+                        SignInButton(
+                            provider: .google,
+                            buttonStyle: .white,
+                            labelStyle: .titleAndIcon,
+                            labelType: .continue,
+                            cornerStyle: .radius(12),
+                            hasBorder: false
+                        ) {
+                            socialAuthError = ""
+                            socialAuthViewModel.handleSignIn(provider: .google)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: 60)
+                        .padding(.bottom, 15)
                     }
                     
                     //                    Text("続行することで利用規約及びプライバシーポリシーに同意したとみなします")
@@ -89,6 +125,12 @@ struct EntryView: View {
                     .font(.system(size: 11))
                     .multilineTextAlignment(.center)
 
+                    if !socialAuthError.isEmpty {
+                        Text(socialAuthError)
+                            .foregroundColor(.red)
+                            .bold()
+                    }
+
                 }
                 .foregroundStyle(.white)
                 .font(.system(size: 15))
@@ -96,14 +138,15 @@ struct EntryView: View {
                 .lineLimit(nil)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 60)
-                
-                // 成功したら ContentView へ
-                NavigationLink(destination: ContentView(),
-                               isActive: $navigateToContent,
-                               label: { EmptyView() })
             }
             .background(.black)
             .ignoresSafeArea()
+            .onChange(of: socialAuthViewModel.lastSignInResult != nil) { _, hasResult in
+                if hasResult,
+                   case .failure(let error) = socialAuthViewModel.lastSignInResult {
+                    socialAuthError = error.localizedDescription
+                }
+            }
         }
     }
     
@@ -114,3 +157,4 @@ struct EntryView: View {
     EntryView()
 }
 //developに統合するために無駄に書いたよ！
+
