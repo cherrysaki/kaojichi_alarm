@@ -31,7 +31,7 @@ struct AlermLeaveDetailView: View {
             )
             .datePickerStyle(.wheel)
             .labelsHidden()
-            .tint(.orange)
+            .tint(.themeOrange)
             .environment(\.colorScheme, .dark)
             .frame(height: 200)
             .padding(.top, 24)
@@ -46,7 +46,7 @@ struct AlermLeaveDetailView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(Color(hex: "FF8300"))
+                        .background(Color.themeOrange)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .contentShape(Rectangle())
@@ -146,3 +146,4 @@ struct AlermLeaveDetailView: View {
         ) { _, _ in }
     }
 }
+

@@ -69,7 +69,7 @@ struct AlermView: View {
                             .background(
                                 Calendar.current.isDate(selectedDate, inSameDayAs: Date())
                                 ? Color.gray.opacity(0.5)
-                                : Color(hex: "FF8300")
+                                : Color.themeOrange
                             )
                             .clipShape(Capsule())
                     }
@@ -130,7 +130,7 @@ struct AlermView: View {
                     }
                     .padding(20)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.orange.opacity(0.2))
+                    .background(Color.themeOrange.opacity(0.2))
                     .foregroundColor(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .padding(.horizontal, 16)
@@ -145,7 +145,7 @@ struct AlermView: View {
                     }
                     .padding(20)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.orange.opacity(0.2))
+                    .background(Color.themeOrange.opacity(0.2))
                     .foregroundColor(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .padding(.horizontal, 16)
@@ -161,7 +161,7 @@ struct AlermView: View {
                     }
                     .padding(20)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.orange.opacity(0.2))
+                    .background(Color.themeOrange.opacity(0.2))
                     .foregroundColor(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .padding(.horizontal, 16)
@@ -266,3 +266,4 @@ struct AlermView: View {
 #Preview {
     AlermView()
 }
+
