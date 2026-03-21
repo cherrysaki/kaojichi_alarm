@@ -105,7 +105,7 @@ class UserStatusViewModel: ObservableObject {
                             guard let userId = data["userId"] as? String else { continue }
                           
                             
-                            let status: UserStatus = switch data["stutus"] as? String ?? "" {
+                            let status: UserStatus = switch data["status"] as? String ?? "" {
                             case "noaction":
                                     .noActions
                             case "iswakeup":
@@ -188,4 +188,3 @@ struct RappUserStatusInfo: Identifiable {
     var user: User? //ユーザー情報
     var status:UserStatus? //ユーザーの起床状況
 }
-

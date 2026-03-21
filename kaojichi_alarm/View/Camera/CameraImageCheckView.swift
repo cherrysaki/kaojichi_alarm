@@ -155,7 +155,7 @@ struct CameraImageCheckView: View {
                     defaults.synchronize()
                     alarmService.isAlarmOn = false
                     alarmService.currentAlarm?.isLeave = true
-                    defaults.set(nil, forKey: "wakeupImageData")
+                    defaults.removeObject(forKey: "wakeupImage")
                     defaults.set(alarmService.isAlarmOn, forKey: "isAlarmOn")
                     alarmService.updateAlarmStatus(id: alarmService.currentAlarm!.id, isOn: true, isWakeup: true, isLeave: true)
                     alarmService.stopAlarm()
@@ -185,7 +185,7 @@ struct CameraImageCheckView: View {
                 // 出発時：アラーム関連の状態をリセットして画面を閉じる
                 alarmService.isAlarmOn = false
                 alarmService.currentAlarm?.isLeave = true
-                defaults.set(nil, forKey: "wakeupImageData")
+                defaults.removeObject(forKey: "wakeupImage")
                 defaults.set(alarmService.isAlarmOn, forKey: "isAlarmOn")
                 alarmService.updateAlarmStatus(id: alarmService.currentAlarm!.id, isOn: true, isWakeup: true, isLeave: true)
                 alarmService.stopAlarm()

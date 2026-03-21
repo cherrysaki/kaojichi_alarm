@@ -6,7 +6,7 @@ import FirebaseAuth
 class AddFriendViewModel: ObservableObject {
     
     enum RelationshipStatus {
-        case none, requestSent, friends
+        case none, requestSent, requestReceived, friends
     }
     
     @Published var searchText = ""
@@ -57,6 +57,8 @@ class AddFriendViewModel: ObservableObject {
                         } else if let request = try? await self.userService.checkFriendRequestStatus(from: currentUserId, to: userId) {
                             if request.fromId == currentUserId {
                                 return (userId, .requestSent, request)
+                            } else {
+                                return (userId, .requestReceived, request)
                             }
                         }
                         return (userId, .none, nil)
@@ -87,7 +89,7 @@ class AddFriendViewModel: ObservableObject {
             await performSearch(query: self.searchText)
         } catch {
             print("Error sending friend request: \(error.localizedDescription)")
-            relationshipStatus[userId] = .none
+            relationshipStatus[userId] = RelationshipStatus.none
         }
     }
     
@@ -95,7 +97,7 @@ class AddFriendViewModel: ObservableObject {
         let userId = user.id // 👇 guard letは不要
         guard let requestToCancel = self.sentRequests[userId] else { return }
         
-        relationshipStatus[userId] = .none
+        relationshipStatus[userId] = RelationshipStatus.none
         
         do {
             try await userService.declineFriendRequest(requestId: requestToCancel.id)

@@ -45,31 +45,25 @@ struct AlarmStartView: View {
             .onAppear {
                 alarmService.fetchAlarms()
                 
-                if alarmService.getTodayAlarm() == nil {
-                    alarmService.isAlarmOn = false
+                if let todayAlarm = alarmService.getTodayAlarm() {
+                    alarmService.isAlarmOn = todayAlarm.isOn
+                    wakeupTimeText = {
+                        let formatter = DateFormatter()
+                        formatter.dateStyle = .none
+                        formatter.timeStyle = .medium
+                        return formatter.string(from: todayAlarm.wakeUpTime)
+                    }()
+                    leaveTimeText = {
+                        let formatter = DateFormatter()
+                        formatter.dateStyle = .none
+                        formatter.timeStyle = .medium
+                        return formatter.string(from: todayAlarm.leaveTime)
+                    }()
                 } else {
-                    alarmService.isAlarmOn = true
-                    
-                    if let currentAlarm = alarmService.currentAlarm {
-                        alarmService.updateAlarmStatus(
-                            id: currentAlarm.id,
-                            isOn: true,
-                            isWakeup: false,
-                            isLeave: false
-                        )
-                    }
+                    alarmService.isAlarmOn = false
                 }
                 
                 UserDefaults.standard.set(alarmService.isAlarmOn, forKey: "isAlarmOn")
-                
-                let formatter = DateFormatter()
-                formatter.dateStyle = .none
-                formatter.timeStyle = .medium
-                
-                if let currentAlarm = alarmService.currentAlarm {
-                    wakeupTimeText = formatter.string(from: currentAlarm.wakeUpTime)
-                    leaveTimeText = formatter.string(from: currentAlarm.leaveTime)
-                }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {

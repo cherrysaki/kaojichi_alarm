@@ -60,6 +60,11 @@ struct AddFriendView: View {
                                                 Button("申請済み") {}
                                                 .buttonStyle(.bordered)
                                                 .disabled(true)
+
+                                            case .requestReceived:
+                                                Button("申請あり") {}
+                                                    .buttonStyle(.bordered)
+                                                    .disabled(true)
                                                 
                                             case .friends: // 👈 このケースを追加
                                                 HStack(spacing: 4) {
