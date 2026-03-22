@@ -42,7 +42,6 @@ class ProfileViewModel: ObservableObject {
         do {
             let snapshot = try await db.collection("posts")
                 .whereField("userId", isEqualTo: currentUserId)
-                .order(by: "postTime", descending: true)
                 .getDocuments()
 
             self.userPosts = snapshot.documents.compactMap { doc in
@@ -53,6 +52,9 @@ class ProfileViewModel: ObservableObject {
                     postTime: (data["postTime"] as? Timestamp)?.dateValue(),
                     imageUrl: data["imageUrl"] as? String
                 )
+            }
+            .sorted {
+                ($0.postTime ?? .distantPast) > ($1.postTime ?? .distantPast)
             }
         } catch {
             print("Error fetching user posts: \(error.localizedDescription)")

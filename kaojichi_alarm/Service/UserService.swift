@@ -10,6 +10,8 @@ struct User: Identifiable, Codable {
     var name_lowercase: String?
     var profileImageUrl: String?
     var bio: String?
+    var latestStatus: String?
+    var latestStatusUpdatedAt: Timestamp?
 }
 
 // ユーザーのビューモデル
@@ -17,14 +19,34 @@ class UserService {
     static let shared = UserService()
     private let db = Firestore.firestore()
     private init() {}
+
+    private func resolvedDisplayName(for authData: FirebaseAuth.User) -> String {
+        let trimmedDisplayName = authData.displayName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !trimmedDisplayName.isEmpty {
+            return trimmedDisplayName
+        }
+
+        if let emailPrefix = authData.email?
+            .split(separator: "@")
+            .first?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !emailPrefix.isEmpty {
+            return emailPrefix
+        }
+
+        return "ユーザー"
+    }
     
     /// Authで作成されたユーザー情報をFirestoreに保存する
     func saveUser(authData: FirebaseAuth.User, name: String) async throws {
+        let resolvedName = name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? resolvedDisplayName(for: authData)
+            : name.trimmingCharacters(in: .whitespacesAndNewlines)
         let user = User(
             id: authData.uid,
-            name: name,
+            name: resolvedName,
             createAt: Timestamp(),
-            name_lowercase: name.lowercased() // 検索用の小文字の名前も保持
+            name_lowercase: resolvedName.lowercased() // 検索用の小文字の名前も保持
         )
         
         // Firestoreに保存するための辞書データを作成
@@ -37,6 +59,39 @@ class UserService {
         
         // ドキュメントIDをAuthのUIDと一致させて保存
         try await db.collection("users").document(user.id).setData(userData)
+    }
+
+    func ensureUserExists(authData: FirebaseAuth.User) async throws {
+        let userRef = db.collection("users").document(authData.uid)
+        let snapshot = try await userRef.getDocument()
+        let resolvedName = resolvedDisplayName(for: authData)
+
+        guard let data = snapshot.data() else {
+            try await saveUser(authData: authData, name: resolvedName)
+            return
+        }
+
+        var updates: [String: Any] = [:]
+
+        if (data["id"] as? String)?.isEmpty != false {
+            updates["id"] = authData.uid
+        }
+
+        let existingName = (data["name"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if existingName.isEmpty {
+            updates["name"] = resolvedName
+            updates["name_lowercase"] = resolvedName.lowercased()
+        } else if data["name_lowercase"] == nil {
+            updates["name_lowercase"] = existingName.lowercased()
+        }
+
+        if data["createAt"] == nil {
+            updates["createAt"] = Timestamp(date: Date())
+        }
+
+        if !updates.isEmpty {
+            try await userRef.setData(updates, merge: true)
+        }
     }
     
     /// 友達申請を送る
@@ -138,7 +193,9 @@ class UserService {
                             createAt: data["createAt"] as? Timestamp ?? Timestamp(),
                             name_lowercase: data["name_lowercase"] as? String ?? "",
                             profileImageUrl: data["profileImageUrl"] as? String ?? "",
-                            bio: data["bio"] as? String ?? ""
+                            bio: data["bio"] as? String ?? "",
+                            latestStatus: data["latestStatus"] as? String,
+                            latestStatusUpdatedAt: data["latestStatusUpdatedAt"] as? Timestamp
                         )
         }
         return users
@@ -162,7 +219,9 @@ class UserService {
                         createAt: data["createAt"] as? Timestamp ?? Timestamp(),
                         name_lowercase: data["name_lowercase"] as? String ?? "",
                         profileImageUrl: data["profileImageUrl"] as? String ?? "",
-                        bio: data["bio"] as? String ?? ""
+                        bio: data["bio"] as? String ?? "",
+                        latestStatus: data["latestStatus"] as? String,
+                        latestStatusUpdatedAt: data["latestStatusUpdatedAt"] as? Timestamp
                     )
                 
         }

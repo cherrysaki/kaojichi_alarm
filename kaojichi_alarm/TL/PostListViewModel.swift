@@ -39,8 +39,6 @@ class PostListViewModel: ObservableObject {
                 // Firestoreからpostsを取得
                 postsListener = db.collection("posts")
                     .whereField("userId", in: friendIds)
-                    .order(by: "postTime", descending: true)
-                    .limit(to: 100)
                     .addSnapshotListener { [weak self] snapshot, error in
                         guard let self = self, let documents = snapshot?.documents else { return }
 
@@ -96,6 +94,9 @@ class PostListViewModel: ObservableObject {
                                     status: data["status"] as? String,
                                     thumbnailUrl: data["thumbnailUrl"] as? String
                                 )
+                            }
+                            .sorted {
+                                ($0.postTime ?? .distantPast) > ($1.postTime ?? .distantPast)
                             }
 
                             await MainActor.run {

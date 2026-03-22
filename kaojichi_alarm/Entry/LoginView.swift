@@ -30,13 +30,7 @@ struct LoginView: View {
                     // Firestoreにユーザー情報を保存（初回ログイン時のみ）
                     Task {
                         do {
-                            let existingUser = try await UserService.shared.fetchUser(withId: user.uid)
-                            if existingUser == nil {
-                                try await UserService.shared.saveUser(
-                                    authData: user,
-                                    name: user.displayName ?? "ユーザー"
-                                )
-                            }
+                            try await UserService.shared.ensureUserExists(authData: user)
                         } catch {
                             print("ソーシャルログイン後のユーザー保存エラー: \(error.localizedDescription)")
                         }

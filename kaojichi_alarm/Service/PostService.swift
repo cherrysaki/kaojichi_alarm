@@ -25,11 +25,12 @@ class PostService {
     private let db = Firestore.firestore()
     private let storage = Storage.storage()
     
-    func uploadPost(imageData: Data, comment: String?, status:UserStatus, completion: @escaping (Error?) -> Void) async throws {
+    func uploadPost(imageData: Data, comment: String?, status:UserStatus, completion: @escaping (Error?) -> Void) async throws -> String {
         
         guard let currentUser = Auth.auth().currentUser else {
-            completion(NSError(domain: "PostService", code: -1, userInfo: [NSLocalizedDescriptionKey: "ユーザー未サインイン"]))
-            return
+            let error = NSError(domain: "PostService", code: -1, userInfo: [NSLocalizedDescriptionKey: "ユーザー未サインイン"])
+            completion(error)
+            throw error
         }
         
         let postRef = db.collection("posts").document()
@@ -38,8 +39,9 @@ class PostService {
         // Compress image before upload
         guard let image = UIImage(data: imageData),
               let compressedData = image.jpegData(compressionQuality: 0.3) else {
-            completion(NSError(domain: "PostService", code: -2, userInfo: [NSLocalizedDescriptionKey: "画像圧縮失敗"]))
-            return
+            let error = NSError(domain: "PostService", code: -2, userInfo: [NSLocalizedDescriptionKey: "画像圧縮失敗"])
+            completion(error)
+            throw error
         }
 
         let metadata = StorageMetadata()
@@ -64,11 +66,56 @@ class PostService {
             "status": status.rawValue
         ]
 
+        let userRef = db.collection("users").document(currentUser.uid)
+        let latestStatus: [String: Any] = [
+            "latestStatus": status.rawValue,
+            "latestStatusUpdatedAt": FieldValue.serverTimestamp()
+        ]
+
         do {
-            try await postRef.setData(post)
+            let batch = db.batch()
+            batch.setData(post, forDocument: postRef)
+            batch.setData(latestStatus, forDocument: userRef, merge: true)
+            try await batch.commit()
             completion(nil)
+            return postRef.documentID
         } catch {
             completion(error)
+            throw error
+        }
+    }
+
+    func deletePost(postId: String) async throws {
+        let postRef = db.collection("posts").document(postId)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            postRef.delete { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+
+        await deleteStorageObjectIfExists(at: "posts/\(postId).jpg")
+        await deleteStorageObjectIfExists(at: "thumbnails/\(postId)_400x400.jpg")
+    }
+
+    private func deleteStorageObjectIfExists(at path: String) async {
+        let storageRef = storage.reference().child(path)
+
+        do {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                storageRef.delete { error in
+                    if let error {
+                        continuation.resume(throwing: error)
+                    } else {
+                        continuation.resume(returning: ())
+                    }
+                }
+            }
+        } catch {
+            print("⚠️ ストレージ削除に失敗しました: \(path), \(error.localizedDescription)")
         }
     }
 }

@@ -24,13 +24,7 @@ struct EntryView: View {
 
                     Task {
                         do {
-                            let existingUser = try await UserService.shared.fetchUser(withId: user.uid)
-                            if existingUser == nil {
-                                try await UserService.shared.saveUser(
-                                    authData: user,
-                                    name: user.displayName ?? "ユーザー"
-                                )
-                            }
+                            try await UserService.shared.ensureUserExists(authData: user)
                         } catch {
                             print("EntryViewからのソーシャルログイン後のユーザー保存エラー: \(error.localizedDescription)")
                         }
@@ -157,4 +151,3 @@ struct EntryView: View {
     EntryView()
 }
 //developに統合するために無駄に書いたよ！
-
