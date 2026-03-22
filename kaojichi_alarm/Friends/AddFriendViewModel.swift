@@ -6,7 +6,7 @@ import FirebaseAuth
 class AddFriendViewModel: ObservableObject {
     
     enum RelationshipStatus {
-        case none, requestSent, friends
+        case none, requestSent, requestReceived, friends
     }
     
     @Published var searchText = ""
@@ -32,6 +32,7 @@ class AddFriendViewModel: ObservableObject {
     func performSearch(query: String) async {
         guard let currentUserId = self.currentUserId, !query.isEmpty else {
             self.searchResults = []
+            self.relationshipStatus = [:]
             return
         }
         
@@ -41,38 +42,45 @@ class AddFriendViewModel: ObservableObject {
         do {
             let users = try await userService.searchUsers(byName: query)
             self.searchResults = users
-            
-            // TaskGroupを使って関係性を並行チェック
-            self.relationshipStatus = await withTaskGroup(
-                of: (String, RelationshipStatus, FriendRequest?).self,
-                returning: [String: RelationshipStatus].self
-            ) { group in
-                
-                for user in users {
-                    let userId = user.id
-                    
-                    group.addTask {
-                        if await self.userService.checkIfFriends(userId1: currentUserId, userId2: userId) {
-                            return (userId, .friends, nil)
-                        } else if let request = try? await self.userService.checkFriendRequestStatus(from: currentUserId, to: userId) {
-                            if request.fromId == currentUserId {
-                                return (userId, .requestSent, request)
-                            }
-                        }
-                        return (userId, .none, nil)
-                    }
-                }
-                
-                var statuses: [String: RelationshipStatus] = [:]
-                for await (userId, status, request) in group {
-                    statuses[userId] = status
-                    if let request = request { self.sentRequests[userId] = request }
-                }
-                return statuses
+
+            if users.isEmpty {
+                self.relationshipStatus = [:]
+                self.sentRequests = [:]
+                return
             }
+
+            async let friendIdsTask = userService.fetchFriendIds(forUserId: currentUserId)
+            async let sentRequestsTask = userService.fetchSentFriendRequests(for: currentUserId)
+            async let incomingRequestsTask = userService.fetchIncomingFriendRequests(for: currentUserId)
+
+            let friendIds = try await friendIdsTask
+            let sentRequests = try await sentRequestsTask
+            let incomingRequests = try await incomingRequestsTask
+
+            let friendsSet = Set(friendIds)
+            let sentRequestsByUser = Dictionary(uniqueKeysWithValues: sentRequests.map { ($0.toId, $0) })
+            let incomingRequestsByUser = Dictionary(uniqueKeysWithValues: incomingRequests.map { ($0.fromId, $0) })
+
+            self.sentRequests = sentRequestsByUser
+            self.relationshipStatus = Dictionary(uniqueKeysWithValues: users.map { user in
+                let status: RelationshipStatus
+
+                if friendsSet.contains(user.id) {
+                    status = .friends
+                } else if sentRequestsByUser[user.id] != nil {
+                    status = .requestSent
+                } else if incomingRequestsByUser[user.id] != nil {
+                    status = .requestReceived
+                } else {
+                    status = .none
+                }
+
+                return (user.id, status)
+            })
         } catch {
             print("Error searching users: \(error.localizedDescription)")
             self.searchResults = []
+            self.relationshipStatus = [:]
         }
     }
     
@@ -87,7 +95,7 @@ class AddFriendViewModel: ObservableObject {
             await performSearch(query: self.searchText)
         } catch {
             print("Error sending friend request: \(error.localizedDescription)")
-            relationshipStatus[userId] = .none
+            relationshipStatus[userId] = RelationshipStatus.none
         }
     }
     
@@ -95,7 +103,7 @@ class AddFriendViewModel: ObservableObject {
         let userId = user.id // 👇 guard letは不要
         guard let requestToCancel = self.sentRequests[userId] else { return }
         
-        relationshipStatus[userId] = .none
+        relationshipStatus[userId] = RelationshipStatus.none
         
         do {
             try await userService.declineFriendRequest(requestId: requestToCancel.id)

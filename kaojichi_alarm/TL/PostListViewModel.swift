@@ -15,9 +15,15 @@ class PostListViewModel: ObservableObject {
     
     private let db = Firestore.firestore()
     private let userService = UserService.shared
+    private var postsListener: ListenerRegistration?
+    private var userCache: [String: User] = [:]
     
     init() {
         fetchPosts()
+    }
+
+    deinit {
+        postsListener?.remove()
     }
     
     func fetchPosts() {
@@ -26,55 +32,71 @@ class PostListViewModel: ObservableObject {
         Task {
             do {
                 // 自分と友達のIDを取得
-                var friendIds = try await userService.fetchFriendIds(forUserId: currentUserId)
-                friendIds.append(currentUserId)
+                let friendIds = Array(Set(try await userService.fetchFriendIds(forUserId: currentUserId) + [currentUserId]))
+
+                postsListener?.remove()
 
                 // Firestoreからpostsを取得
-                db.collection("posts")
+                postsListener = db.collection("posts")
                     .whereField("userId", in: friendIds)
-                    .order(by: "postTime", descending: true)
                     .addSnapshotListener { [weak self] snapshot, error in
                         guard let self = self, let documents = snapshot?.documents else { return }
 
                         Task {
-                            var newPosts: [PostInfo] = []
-                            var userCache: [String: User] = [:] // cache fetched users
+                            let calendar = Calendar.current
+                            let startOfToday = calendar.startOfDay(for: Date())
+                            guard let startOfTomorrow = calendar.date(byAdding: .day, value: 1, to: startOfToday) else {
+                                return
+                            }
 
-                            await withTaskGroup(of: (String, User?).self) { group in
-                                for doc in documents {
-                                    let data = doc.data()
-                                    let userId = data["userId"] as? String ?? ""
-
-                                    group.addTask {
-                                        if let cachedUser = userCache[userId] {
-                                            return (userId, cachedUser)
-                                        }
-                                        let user = try? await self.userService.fetchUser(withId: userId)
-                                        return (userId, user)
-                                    }
+                            let todayDocuments = documents.filter { doc in
+                                guard let timestamp = doc.data()["postTime"] as? Timestamp else {
+                                    return false
                                 }
 
-                                for await (userId, user) in group {
-                                    userCache[userId] = user
+                                let postDate = timestamp.dateValue()
+                                return postDate >= startOfToday && postDate < startOfTomorrow
+                            }
+
+                            let missingUserIds = Set(
+                                todayDocuments.compactMap { $0.data()["userId"] as? String }
+                            ).subtracting(Set(self.userCache.keys))
+
+                            if !missingUserIds.isEmpty {
+                                await withTaskGroup(of: (String, User?).self) { group in
+                                    for userId in missingUserIds {
+                                        group.addTask {
+                                            let user = try? await self.userService.fetchUser(withId: userId)
+                                            return (userId, user)
+                                        }
+                                    }
+
+                                    for await (userId, user) in group {
+                                        if let user {
+                                            self.userCache[userId] = user
+                                        }
+                                    }
                                 }
                             }
 
-                            for doc in documents {
+                            let newPosts = todayDocuments.compactMap { doc -> PostInfo? in
                                 let data = doc.data()
                                 let userId = data["userId"] as? String ?? ""
 
-                                let post = PostInfo(
+                                return PostInfo(
                                     id: doc.documentID,
                                     userId: userId,
                                     postTime: (data["postTime"] as? Timestamp)?.dateValue(),
                                     imageUrl: data["imageUrl"] as? String,
                                     goodCount: data["goodCount"] as? Int ?? 0,
                                     comments: data["comments"] as? [String] ?? [],
-                                    user: userCache[userId],
+                                    user: self.userCache[userId],
                                     status: data["status"] as? String,
                                     thumbnailUrl: data["thumbnailUrl"] as? String
                                 )
-                                newPosts.append(post)
+                            }
+                            .sorted {
+                                ($0.postTime ?? .distantPast) > ($1.postTime ?? .distantPast)
                             }
 
                             await MainActor.run {

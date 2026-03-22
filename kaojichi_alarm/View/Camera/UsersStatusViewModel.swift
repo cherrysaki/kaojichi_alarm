@@ -25,8 +25,8 @@ class UserStatusViewModel: ObservableObject {
     @Published var isWakeupUsers:[RappUserStatusInfo] = []
     @Published var isLeaveUsers:[RappUserStatusInfo] = []
     
-    private let db = Firestore.firestore()
     private let userService = UserService.shared
+    private var userCache: [String: User] = [:]
     
     init() {
 //        fetchUsersStatus()
@@ -47,9 +47,7 @@ class UserStatusViewModel: ObservableObject {
         Task {
             do {
                 // 友達のIDリストを取得
-                var friendIds = try await userService.fetchFriendIds(forUserId: currentUserId)
-                
-                friendIds.append(currentUserId)
+                let friendIds = Array(Set(try await userService.fetchFriendIds(forUserId: currentUserId) + [currentUserId]))
                 
                 
                 
@@ -68,73 +66,40 @@ class UserStatusViewModel: ObservableObject {
                     return
                 }
                 
-                
-                let snapshot = try await db.collection("posts")
-                    .whereField("userId", in: friendIds)
-                    .order(by: "postTime", descending: true)
-                    .getDocuments()
-                
-                print(snapshot.documents)
-                
-                var latestStatus : [String: RappUserStatusInfo] = [:] // ユーザーIDをキーにして、重複を防ぐための辞書
-                
-                for friendId in friendIds {
-                    latestStatus[friendId] = nil
-                }
-                
-                for doc in snapshot.documents {
-                    
-                    print(doc.data())
-                    print("----------------------------------------------------")
-                    
-                    // 3. アプリ側でフィルタリングし、各ユーザーの「今日の最新投稿」を1件だけ取り出す
-                   
-                    
-                    // ドキュメントをループ処理
-         
-                        let data = doc.data()
-                        
-                        // postTimeをDateに変換
-                        guard let timestamp = data["postTime"] as? Timestamp else { continue }
-                        
-                        let postDate = timestamp.dateValue()
-                        
-                        // 今日の投稿であり、まだそのユーザーの投稿を結果に追加していない場合のみ処理
-                        if postDate >= startOfToday && postDate < startOfTomorrow {
-                      
-                            guard let userId = data["userId"] as? String else { continue }
-                          
-                            
-                            let status: UserStatus = switch data["stutus"] as? String ?? "" {
-                            case "noaction":
-                                    .noActions
-                            case "iswakeup":
-                                    .isWakeup
-                            case "isleave":
-                                    .isLeave
-                            default:
-                                    .noActions
-                            }
-                            
-                            if latestStatus[userId] == nil {
-                                print("userID:\(userId)")
-                                print("‼️データはこちら：\(data["id"] as? String ?? "")")
-                                // このユーザーの最初の投稿（=最新の投稿）なので辞書に追加
-                                let rappUserStatusInfo = RappUserStatusInfo(
-                                    id: userId,
-                                    status: status
-                                )
-                                
-                                latestStatus[userId] = rappUserStatusInfo
-                                
-                                latestStatus[userId]?.user = try? await self.userService.fetchUser(withId: userId)
+                var latestStatus: [String: RappUserStatusInfo] = [:]
+                var fetchedUsers: [String: User] = [:]
 
-//                                self.userstatus.updateValue(latestStatus[userId]!, forKey: userId)
-                                
-                            }
+                await withTaskGroup(of: (String, User?).self) { group in
+                    for userId in friendIds {
+                        group.addTask {
+                            let user = try? await self.userService.fetchUser(withId: userId)
+                            return (userId, user)
                         }
-                    
-                   
+                    }
+
+                    for await (userId, user) in group {
+                        if let user {
+                            fetchedUsers[userId] = user
+                            self.userCache[userId] = user
+                        }
+                    }
+                }
+
+                for userId in friendIds {
+                    let user = fetchedUsers[userId] ?? userCache[userId]
+                    let latestStatusDate = user?.latestStatusUpdatedAt?.dateValue()
+                    let isTodayStatus =
+                        latestStatusDate.map { $0 >= startOfToday && $0 < startOfTomorrow } ?? false
+                    let status =
+                        isTodayStatus
+                        ? UserStatus(rawValue: user?.latestStatus ?? "") ?? .noActions
+                        : .noActions
+
+                    latestStatus[userId] = RappUserStatusInfo(
+                        id: userId,
+                        user: user,
+                        status: status
+                    )
                 }
                 
                 await MainActor.run {
@@ -160,8 +125,6 @@ class UserStatusViewModel: ObservableObject {
                 }
                 
                 }
-                
-                print(userstatus)
             } catch {
                 print("Error fetching friends: \(error.localizedDescription)")
             }
@@ -188,4 +151,3 @@ struct RappUserStatusInfo: Identifiable {
     var user: User? //ユーザー情報
     var status:UserStatus? //ユーザーの起床状況
 }
-

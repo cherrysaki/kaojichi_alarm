@@ -14,18 +14,19 @@ class AuthService {
     static let shared = AuthService()
     private init() {}
     
-    /// メールアドレスとパスワードでユーザーを新規作成する
-    func createUser(withEmail email: String, password: String) async throws -> FirebaseAuth.User {
-            let authResult = try await Auth.auth().createUser(withEmail: email, password: password)
-            return authResult.user
-    }
-    
-    /// メールアドレスとパスワードでサインインする
-    func signIn(withEmail email: String, password: String, completion: @escaping (Error?) -> Void) {
-        Auth.auth().signIn(withEmail: email, password: password) { result, error in
-            completion(error)
-        }
-    }
+    // メールアドレス/パスワード認証廃止のためコメントアウト
+//    /// メールアドレスとパスワードでユーザーを新規作成する
+//    func createUser(withEmail email: String, password: String) async throws -> FirebaseAuth.User {
+//            let authResult = try await Auth.auth().createUser(withEmail: email, password: password)
+//            return authResult.user
+//    }
+//
+//    /// メールアドレスとパスワードでサインインする
+//    func signIn(withEmail email: String, password: String, completion: @escaping (Error?) -> Void) {
+//        Auth.auth().signIn(withEmail: email, password: password) { result, error in
+//            completion(error)
+//        }
+//    }
     /// 現在のユーザーをサインアウトする
         func signOut() {
             do {

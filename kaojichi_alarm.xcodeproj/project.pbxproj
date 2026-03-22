@@ -7,13 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6F3B22742F6067DF00FBE484 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B22732F6067DF00FBE484 /* FirebaseAppCheck */; };
 		6F3B22762F6067DF00FBE484 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B22752F6067DF00FBE484 /* FirebaseAuth */; };
 		6F3B22782F6067DF00FBE484 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B22772F6067DF00FBE484 /* FirebaseCore */; };
-		6F3B227A2F6067DF00FBE484 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B22792F6067DF00FBE484 /* FirebaseDatabase */; };
 		6F3B227C2F6067DF00FBE484 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B227B2F6067DF00FBE484 /* FirebaseFirestore */; };
 		6F3B227E2F6067DF00FBE484 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B227D2F6067DF00FBE484 /* FirebaseStorage */; };
 		6F3B22812F60685F00FBE484 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 6F3B22802F60685F00FBE484 /* Kingfisher */; };
+		E4A33BB92F63B97500F9714A /* FirebaseAuthEasier in Frameworks */ = {isa = PBXBuildFile; productRef = E4A33BB82F63B97500F9714A /* FirebaseAuthEasier */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,10 +32,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6F3B22742F6067DF00FBE484 /* FirebaseAppCheck in Frameworks */,
 				6F3B22782F6067DF00FBE484 /* FirebaseCore in Frameworks */,
 				6F3B22812F60685F00FBE484 /* Kingfisher in Frameworks */,
-				6F3B227A2F6067DF00FBE484 /* FirebaseDatabase in Frameworks */,
+				E4A33BB92F63B97500F9714A /* FirebaseAuthEasier in Frameworks */,
 				6F3B227C2F6067DF00FBE484 /* FirebaseFirestore in Frameworks */,
 				6F3B22762F6067DF00FBE484 /* FirebaseAuth in Frameworks */,
 				6F3B227E2F6067DF00FBE484 /* FirebaseStorage in Frameworks */,
@@ -82,13 +80,12 @@
 			);
 			name = kaojichi_alarm;
 			packageProductDependencies = (
-				6F3B22732F6067DF00FBE484 /* FirebaseAppCheck */,
 				6F3B22752F6067DF00FBE484 /* FirebaseAuth */,
 				6F3B22772F6067DF00FBE484 /* FirebaseCore */,
-				6F3B22792F6067DF00FBE484 /* FirebaseDatabase */,
 				6F3B227B2F6067DF00FBE484 /* FirebaseFirestore */,
 				6F3B227D2F6067DF00FBE484 /* FirebaseStorage */,
 				6F3B22802F60685F00FBE484 /* Kingfisher */,
+				E4A33BB82F63B97500F9714A /* FirebaseAuthEasier */,
 			);
 			productName = kaojichi_alarm;
 			productReference = E453E8C52F5AA9C2005C84EB /* kaojichi_alarm.app */;
@@ -110,17 +107,19 @@
 				};
 			};
 			buildConfigurationList = E453E8C02F5AA9C2005C84EB /* Build configuration list for PBXProject "kaojichi_alarm" */;
-			developmentRegion = en;
+			developmentRegion = ja;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				ja,
 			);
 			mainGroup = E453E8BC2F5AA9C2005C84EB;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				6F3B22722F6067DF00FBE484 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				6F3B227F2F60685F00FBE484 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				E4A33BB72F63B97500F9714A /* XCRemoteSwiftPackageReference "FirebaseAuthEasier" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E453E8C62F5AA9C2005C84EB /* Products */;
@@ -279,23 +278,29 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = kaojichi_alarm/kaojichi_alarm.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6TY78LCT9T;
+				DEVELOPMENT_TEAM = 6HY8YSMK7C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "kaojichi-alarm-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "顔質アラーム！";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				INFOPLIST_KEY_NSCameraUsageDescription = "起床時と出発時の写真を撮影するためにカメラを使用します。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.kambayashi.yukke.kaojichi-alarm";
+				PRODUCT_BUNDLE_IDENTIFIER = "app.hiramotokeiju.hirakei.kaojichi-alarm";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -303,7 +308,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -312,23 +317,29 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = kaojichi_alarm/kaojichi_alarm.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6TY78LCT9T;
+				DEVELOPMENT_TEAM = 6HY8YSMK7C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "kaojichi-alarm-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "顔質アラーム！";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				INFOPLIST_KEY_NSCameraUsageDescription = "起床時と出発時の写真を撮影するためにカメラを使用します。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.kambayashi.yukke.kaojichi-alarm";
+				PRODUCT_BUNDLE_IDENTIFIER = "app.hiramotokeiju.hirakei.kaojichi-alarm";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -336,7 +347,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -380,14 +391,17 @@
 				minimumVersion = 8.8.0;
 			};
 		};
+		E4A33BB72F63B97500F9714A /* XCRemoteSwiftPackageReference "FirebaseAuthEasier" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sugijotaro/FirebaseAuthEasier.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		6F3B22732F6067DF00FBE484 /* FirebaseAppCheck */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6F3B22722F6067DF00FBE484 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAppCheck;
-		};
 		6F3B22752F6067DF00FBE484 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 6F3B22722F6067DF00FBE484 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
@@ -397,11 +411,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6F3B22722F6067DF00FBE484 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCore;
-		};
-		6F3B22792F6067DF00FBE484 /* FirebaseDatabase */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 6F3B22722F6067DF00FBE484 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseDatabase;
 		};
 		6F3B227B2F6067DF00FBE484 /* FirebaseFirestore */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -417,6 +426,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6F3B227F2F60685F00FBE484 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		E4A33BB82F63B97500F9714A /* FirebaseAuthEasier */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4A33BB72F63B97500F9714A /* XCRemoteSwiftPackageReference "FirebaseAuthEasier" */;
+			productName = FirebaseAuthEasier;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

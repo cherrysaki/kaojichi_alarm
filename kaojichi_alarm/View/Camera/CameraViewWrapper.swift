@@ -93,12 +93,19 @@ struct CameraViewWrapper: View {
         }
         // --- 撮影後の確認画面へ遷移 ---
         .fullScreenCover(isPresented: $isShowingCheckView) {
-            if let capturedImage = capturedImage {
+            if capturedImage != nil,
+               let currentAlarm = alarmService.currentAlarm {
                 CameraImageCheckView(
                     cameraviewmodel: cameraviewmodel,
                     CapturedImage: $capturedImage,
-                    isWakeupnow: alarmService.currentAlarm!.isWakeup
+                    isWakeupnow: currentAlarm.isWakeup
                     )
+            } else {
+                Color.black
+                    .ignoresSafeArea()
+                    .onAppear {
+                        isShowingCheckView = false
+                    }
             }
         }
         .onAppear{
@@ -111,8 +118,13 @@ struct CameraViewWrapper: View {
         let dateFormatter = DateFormatter()
         
         dateFormatter.dateFormat = "HH時mm分"
-        
-        wakeuptime = dateFormatter.string(from: alarmService.currentAlarm!.wakeUpTime )
+
+        guard let currentAlarm = alarmService.currentAlarm else {
+            wakeuptime = ""
+            return
+        }
+
+        wakeuptime = dateFormatter.string(from: currentAlarm.wakeUpTime)
     }
     
 }

@@ -166,7 +166,7 @@ struct ProfileView: View {
         .onAppear {
             Task {
                 await viewModel.fetchUserProfile()
-                viewModel.fetchUserPosts()
+                await viewModel.fetchUserPosts()
             }
         }
     }

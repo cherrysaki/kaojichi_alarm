@@ -72,7 +72,7 @@ struct EditProfileView: View {
                                             
                                             Rectangle()
                                                 .foregroundStyle(Color.gray.opacity(0.2))
-                                                .frame(width: .infinity, height: 100)
+                                                .frame(maxWidth: .infinity, minHeight: 100, maxHeight: 100)
                                             
                                             VStack {
                                                 HStack {
@@ -140,6 +140,7 @@ struct EditProfileView: View {
                             await viewModel.saveProfile()
                         }
                     }
+                    .disabled(viewModel.isLoading || viewModel.displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
             // 保存が成功したら画面を閉じる

@@ -57,7 +57,7 @@ struct TLView: View {
                         .padding(.horizontal)
                     
                     if viewModel.posts.isEmpty {
-                        Text("まだ投稿はありません")
+                        Text("今日はまだ投稿はありません")
                             .foregroundStyle(.gray)
                             .padding()
                     } else {

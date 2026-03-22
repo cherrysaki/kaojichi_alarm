@@ -31,4 +31,5 @@ extension Color {
             opacity: 1.0
         )
     }
+    static let themeOrange = Color(hex: "FF8300")
 }

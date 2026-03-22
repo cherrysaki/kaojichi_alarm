@@ -9,7 +9,8 @@ import SwiftUI
 import FirebaseCore
 import SwiftData
 import BackgroundTasks
-
+import UIKit
+import UserNotifications
 // =======================
 // 共有の ModelContainer (SwiftData)
 // =======================
@@ -30,9 +31,28 @@ let sharedModelContainer: ModelContainer = {
 // =======================
 // Main App
 // =======================
+final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+        return true
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .list, .sound, .badge])
+    }
+}
+
 @main
 struct YourApp: App {
     @Environment(\.scenePhase) private var scenePhase
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     
     // バックグラウンドタスク管理
     var backgroundtask = BackgroundTasks()
@@ -76,11 +96,11 @@ struct YourApp: App {
         tabAppearance.backgroundColor = tabColor
         
         let normalAttrs: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor.white]
-        let selectedAttrs: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor(Color(hex: "FF8300"))]
+        let selectedAttrs: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor(Color.themeOrange)]
         
         tabAppearance.stackedLayoutAppearance.normal.iconColor = .white
         tabAppearance.stackedLayoutAppearance.normal.titleTextAttributes = normalAttrs
-        tabAppearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color(hex: "FF8300"))
+        tabAppearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.themeOrange)
         tabAppearance.stackedLayoutAppearance.selected.titleTextAttributes = selectedAttrs
         tabAppearance.inlineLayoutAppearance = tabAppearance.stackedLayoutAppearance
         tabAppearance.compactInlineLayoutAppearance = tabAppearance.stackedLayoutAppearance
