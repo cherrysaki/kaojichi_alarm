@@ -139,7 +139,7 @@ struct TutorialView: View {
                 .scaledToFit()
                 .frame(width: 140, height: 140)
 
-            Text("顔質アラーム! へようこそ")
+            Text("顔質アラーム！ へようこそ")
                 .font(.system(size: 30, weight: .bold))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.white)
