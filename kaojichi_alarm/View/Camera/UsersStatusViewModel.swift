@@ -27,6 +27,7 @@ class UserStatusViewModel: ObservableObject {
     
     private let db = Firestore.firestore()
     private let userService = UserService.shared
+    private var userCache: [String: User] = [:]
     
     init() {
 //        fetchUsersStatus()
@@ -66,16 +67,19 @@ class UserStatusViewModel: ObservableObject {
                     return
                 }
                 
+                let friendIdsSet = Set(friendIds)
                 
                 let snapshot = try await db.collection("posts")
-                    .whereField("userId", in: friendIds)
+                    .whereField("postTime", isGreaterThanOrEqualTo: Timestamp(date: startOfToday))
+                    .whereField("postTime", isLessThan: Timestamp(date: startOfTomorrow))
                     .getDocuments()
                 
                 var latestStatus: [String: RappUserStatusInfo] = [:]
                 var usersWithPostToday = Set<String>()
+                let missingUserIds = friendIds.filter { userCache[$0] == nil }
 
                 await withTaskGroup(of: (String, User?).self) { group in
-                    for userId in friendIds {
+                    for userId in missingUserIds {
                         group.addTask {
                             let user = try? await self.userService.fetchUser(withId: userId)
                             return (userId, user)
@@ -83,12 +87,18 @@ class UserStatusViewModel: ObservableObject {
                     }
 
                     for await (userId, user) in group {
-                        latestStatus[userId] = RappUserStatusInfo(
-                            id: userId,
-                            user: user,
-                            status: .noActions
-                        )
+                        if let user {
+                            self.userCache[userId] = user
+                        }
                     }
+                }
+
+                for userId in friendIds {
+                    latestStatus[userId] = RappUserStatusInfo(
+                        id: userId,
+                        user: userCache[userId],
+                        status: .noActions
+                    )
                 }
 
                 let sortedDocuments = snapshot.documents.sorted {
@@ -114,6 +124,7 @@ class UserStatusViewModel: ObservableObject {
                         if postDate >= startOfToday && postDate < startOfTomorrow {
                       
                             guard let userId = data["userId"] as? String else { continue }
+                            guard friendIdsSet.contains(userId) else { continue }
                             guard !usersWithPostToday.contains(userId) else { continue }
                             let rawStatus = data["status"] as? String ?? ""
                             let status = UserStatus(rawValue: rawStatus) ?? .noActions

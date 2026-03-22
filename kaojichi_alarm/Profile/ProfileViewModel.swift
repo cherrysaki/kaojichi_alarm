@@ -36,24 +36,26 @@ class ProfileViewModel: ObservableObject {
     }
     
     //userId で投稿を検索す
-    func fetchUserPosts() {
+    func fetchUserPosts() async {
         guard let currentUserId = Auth.auth().currentUser?.uid else { return }
-        
-        db.collection("posts")
-            .whereField("userId", isEqualTo: currentUserId)
-            .order(by: "postTime", descending: true)
-            .addSnapshotListener { [weak self] snapshot, error in
-                guard let documents = snapshot?.documents else { return }
-                
-                self?.userPosts = documents.compactMap { doc in
-                    let data = doc.data()
-                    return PostInfo(
-                        id: doc.documentID,
-                        userId: data["userId"] as? String ?? "",
-                        postTime: (data["postTime"] as? Timestamp)?.dateValue(),
-                        imageUrl: data["imageUrl"] as? String
-                    )
-                }
+
+        do {
+            let snapshot = try await db.collection("posts")
+                .whereField("userId", isEqualTo: currentUserId)
+                .order(by: "postTime", descending: true)
+                .getDocuments()
+
+            self.userPosts = snapshot.documents.compactMap { doc in
+                let data = doc.data()
+                return PostInfo(
+                    id: doc.documentID,
+                    userId: data["userId"] as? String ?? "",
+                    postTime: (data["postTime"] as? Timestamp)?.dateValue(),
+                    imageUrl: data["imageUrl"] as? String
+                )
             }
+        } catch {
+            print("Error fetching user posts: \(error.localizedDescription)")
+        }
     }
 }

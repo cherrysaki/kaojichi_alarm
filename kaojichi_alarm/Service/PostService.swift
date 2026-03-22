@@ -24,7 +24,6 @@ struct PostInfo: Identifiable {
 class PostService {
     private let db = Firestore.firestore()
     private let storage = Storage.storage()
-    private let userService = UserService.shared
     
     func uploadPost(imageData: Data, comment: String?, status:UserStatus, completion: @escaping (Error?) -> Void) async throws {
         
@@ -71,11 +70,5 @@ class PostService {
         } catch {
             completion(error)
         }
-    }
-    
-    
-    func uploadOriginalImage(imageData: Data) async throws {
-        let storageRef = storage.reference().child("originals/\(UUID().uuidString).jpg")
-        _ = try await storageRef.putDataAsync(imageData, metadata: nil)
     }
 }
