@@ -79,6 +79,17 @@ struct ContentView: View {
         .fullScreenCover(isPresented: $isShowAlermStartView){
             AlarmStartView()
         }
+        .onChange(of: alarmService.shouldReturnToTimeline) { _, newValue in
+            if newValue {
+                isShowAlermStartView = false
+                alarmService.shouldReturnToTimeline = false
+            }
+        }
+        .alert("投稿完了", isPresented: $alarmService.showPostCompletePopup) {
+            Button("OK") {}
+        } message: {
+            Text("投稿が完了しました！")
+        }
         .onAppear{
 //            if alarmService.isWakeupnow && alarmService.currentAlarm != nil{
 //                

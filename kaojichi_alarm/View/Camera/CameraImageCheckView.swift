@@ -15,6 +15,8 @@ struct CameraImageCheckView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var CapturedImage: UIImage?
     var postService = PostService()
+
+    @State private var isUploading = false
     
     let isWakeupnow: Bool
     
@@ -86,7 +88,6 @@ struct CameraImageCheckView: View {
                     // 下部ボタン
 
                 if alarmService.currentAlarm!.isWakeup {
-                        
 
                         // 出発時のボタン
                         Button(action: {
@@ -101,9 +102,10 @@ struct CameraImageCheckView: View {
                             .modifier(ActionButtonStyle())
                         }
                         .padding(.horizontal, 40)
-                        
+                        .disabled(isUploading)
+
                     } else {
-                        
+
                         // 起床時のボタン
                         Button(action: {
                             handlePost(isLeave: false)
@@ -117,6 +119,7 @@ struct CameraImageCheckView: View {
                             .modifier(ActionButtonStyle())
                         }
                         .padding(.horizontal, 40)
+                        .disabled(isUploading)
                     }
                 }
                 .onAppear{
@@ -136,22 +139,31 @@ struct CameraImageCheckView: View {
                         }
                     }
                 }
+                // ローディングオーバーレイ
+                if isUploading {
+                    Color.black.opacity(0.5)
+                        .ignoresSafeArea()
+                    ProgressView("投稿中...")
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .foregroundColor(.white)
+                        .scaleEffect(1.5)
+                }
             }
         }
     }
-    
-    
+
+
     /// 投稿処理を共通化するメソッド
     private func handlePost(isLeave: Bool) {
-        
+
         if alarmService.currentAlarm!.isWakeup {
-            
+
             if var image = CapturedImage{
-                let targetSize = CGSize(width: 2024, height: 2024) // 目標サイズ（例: 1080px四方）
+                let targetSize = CGSize(width: 2024, height: 2024)
                 image = image.preparingThumbnail(of: targetSize) ?? image
-                
+
                 if let imageData = image.jpegData(compressionQuality: 0.8) {
-                   
+
                     defaults.synchronize()
                     alarmService.isAlarmOn = false
                     alarmService.currentAlarm?.isLeave = true
@@ -159,29 +171,23 @@ struct CameraImageCheckView: View {
                     defaults.set(alarmService.isAlarmOn, forKey: "isAlarmOn")
                     alarmService.updateAlarmStatus(id: alarmService.currentAlarm!.id, isOn: true, isWakeup: true, isLeave: true)
                     alarmService.stopAlarm()
-                    dismiss()
-                    
-                    Task.detached(priority: .background) {
+
+                    isUploading = true
+                    Task {
                         do {
-                            // 4. 裏でアップロード処理を実行
                             try await postService.uploadPost(imageData: imageData, comment: selectedComment, status: .isLeave, completion: { _ in
                                 print("a")
                             })
-                            
-                            // 5. (任意) アップロード成功後、裏で何か処理が必要な場合はここで行う
-                            // 例: アプリ全体の投稿リストを更新する通知を送るなど
-                            await MainActor.run {
-                                // alarmService.postsNeedRefresh = true
-                            }
-                            
                         } catch {
-                            // エラーが発生してもUIは既にないので、コンソールにログを出すなどの対応
                             print("❌ バックグラウンドでの投稿に失敗しました: \(error.localizedDescription)")
                         }
+                        isUploading = false
+                        alarmService.showPostCompletePopup = true
+                        alarmService.shouldReturnToTimeline = true
                     }
                 }
             } else{
-                
+
                 // 出発時：アラーム関連の状態をリセットして画面を閉じる
                 alarmService.isAlarmOn = false
                 alarmService.currentAlarm?.isLeave = true
@@ -190,23 +196,31 @@ struct CameraImageCheckView: View {
                 alarmService.updateAlarmStatus(id: alarmService.currentAlarm!.id, isOn: true, isWakeup: true, isLeave: true)
                 alarmService.stopAlarm()
                 dismiss()
-                
+
             }
         } else {
 
             // 撮影画像はオリジナルとして保存
             if let image = CapturedImage,
                let imageData = image.jpegData(compressionQuality: 0.8) {
-                Task.detached(priority: .background) {
+
+                // アラーム関連の状態をリセット
+                defaults.set(imageData, forKey: "wakeupImage")
+                defaults.synchronize()
+                alarmService.currentAlarm?.isWakeup = true
+                alarmService.updateAlarmStatus(id: alarmService.currentAlarm!.id, isOn: true, isWakeup: true, isLeave: false)
+                alarmService.stopAlarm()
+
+                isUploading = true
+                Task {
                     do {
                         try await postService.uploadOriginalImage(imageData: imageData)
-                        
+
                         // 投稿用は必ずwakeup.jpg
                         if let fixedImage = UIImage(named: "wakeup"),
                            let fixedImageData = fixedImage.jpegData(compressionQuality: 0.8) {
                             try await postService.uploadPost(imageData: fixedImageData, comment: selectedComment, status: .isWakeup, completion: { _ in
                                 print("wakeup.jpgを投稿しました")
-
                             })
                         } else {
                             print("❌ wakeup.jpgが見つからないかJPEG変換に失敗しました。")
@@ -214,16 +228,10 @@ struct CameraImageCheckView: View {
                     } catch {
                         print("❌ 投稿処理失敗: \(error)")
                     }
+                    isUploading = false
+                    alarmService.showPostCompletePopup = true
+                    alarmService.shouldReturnToTimeline = true
                 }
-                
-                // アラーム関連の状態をリセットして画面を閉じる
-                defaults.set(imageData, forKey: "wakeupImage")
-
-                defaults.synchronize()
-                alarmService.currentAlarm?.isWakeup = true
-                alarmService.updateAlarmStatus(id: alarmService.currentAlarm!.id, isOn: true, isWakeup: true, isLeave: false)
-                alarmService.stopAlarm()
-                dismiss()
             }
         }
     }
