@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>97584677117-e75ao96ojtrjmpihib84pplcf7ee8ov4.apps.googleusercontent.com</string>
+	<string>97584677117-0cvlf6blibvq3fdkm4k9ghusu9o24iut.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.97584677117-e75ao96ojtrjmpihib84pplcf7ee8ov4</string>
+	<string>com.googleusercontent.apps.97584677117-0cvlf6blibvq3fdkm4k9ghusu9o24iut</string>
 	<key>API_KEY</key>
 	<string>AIzaSyCtX43VwUkEro8MeZ_kvOK7L55gfrbm8UY</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>app.kambayashi.yukke.kaojichi-alarm</string>
+	<string>app.kambayashi.hirakei.kaojichi-alarm</string>
 	<key>PROJECT_ID</key>
 	<string>hacku2025-9335f</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:97584677117:ios:48affd506a99353f347e94</string>
+	<string>1:97584677117:ios:93a6bd72cba711cb347e94</string>
 </dict>
 </plist>

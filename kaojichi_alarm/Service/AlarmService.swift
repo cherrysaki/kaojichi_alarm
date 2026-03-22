@@ -30,9 +30,11 @@ class AlarmService: ObservableObject {
     @Published var isAlarmOn: Bool = UserDefaults.standard.value(forKey: "isAlarmOn") as? Bool ?? false
     @Published var isWakeup: Bool = false
     @Published var isLeave: Bool = false
-    
+    @Published var shouldReturnToTimeline: Bool = false
+    @Published var showPostCompletePopup: Bool = false
 
-    
+
+
     private init() {
         setupAudioSession()
         requestNotificationPermission()
