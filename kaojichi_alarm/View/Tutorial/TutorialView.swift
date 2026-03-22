@@ -20,7 +20,7 @@ struct TutorialView: View {
 
     let pages: [TutorialPage] = [
         TutorialPage(
-            title: "顔質アラームへようこそ",
+            title: "顔質アラーム！ へようこそ",
             description: "寝起き顔を撮って止める、\n遅刻防止アラームアプリです。",
             imageName: nil
         ),
@@ -139,7 +139,7 @@ struct TutorialView: View {
                 .scaledToFit()
                 .frame(width: 140, height: 140)
 
-            Text("顔質アラームへようこそ")
+            Text("顔質アラーム! へようこそ")
                 .font(.system(size: 30, weight: .bold))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.white)

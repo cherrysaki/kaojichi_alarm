@@ -53,7 +53,7 @@ struct EntryView: View {
                     .frame(width: 200, height: 200)
 //                    .padding(.bottom, 0)
                 
-                Text("顔質アラーム")
+                Text("顔質アラーム！")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
