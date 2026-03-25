@@ -43,20 +43,11 @@ struct AlarmPrepareView: View {
         }
         .onAppear {
             alarmService.fetchAlarms()
-            
-            if alarmService.getTodayAlarm() == nil {
-                alarmService.isAlarmOn = false
+
+            if let todayAlarm = alarmService.getTodayAlarm() {
+                alarmService.isAlarmOn = todayAlarm.isOn
             } else {
-                alarmService.isAlarmOn = true
-                
-                if let currentAlarm = alarmService.currentAlarm {
-                    alarmService.updateAlarmStatus(
-                        id: currentAlarm.id,
-                        isOn: true,
-                        isWakeup: false,
-                        isLeave: false
-                    )
-                }
+                alarmService.isAlarmOn = false
             }
             
             UserDefaults.standard.set(alarmService.isAlarmOn, forKey: "isAlarmOn")

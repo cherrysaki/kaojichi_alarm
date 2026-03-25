@@ -50,14 +50,28 @@ class EditProfileViewModel: ObservableObject {
     
     /// 現在のユーザー情報を取得して、編集フィールドにセットする
     func fetchCurrentUser() async {
-        guard let currentUserId = Auth.auth().currentUser?.uid else { return }
-        self.user = try? await userService.fetchUser(withId: currentUserId)
+        guard let authUser = Auth.auth().currentUser else {
+            self.errorMessage = "ログイン情報が確認できません。再度ログインしてください。"
+            return
+        }
         
-        self.displayName = self.user?.name ?? ""
-        self.bio = self.user?.bio ?? ""
+        isLoading = true
+        defer { isLoading = false }
         
-        if let imageData = defaults.data(forKey: "hitozichiImage"){
-            self.hitozichiImage = UIImage(data: imageData)
+        do {
+            self.user = try await userService.fetchUser(withId: authUser.uid)
+            if self.user == nil {
+                try await userService.ensureUserExists(authData: authUser)
+                self.user = try await userService.fetchUser(withId: authUser.uid)
+            }
+            self.displayName = self.user?.name ?? ""
+            self.bio = self.user?.bio ?? ""
+            
+            if let imageData = defaults.data(forKey: "hitozichiImage"){
+                self.hitozichiImage = UIImage(data: imageData)
+            }
+        } catch {
+            self.errorMessage = "プロフィール情報の取得に失敗しました: \(error.localizedDescription)"
         }
     }
     
@@ -77,9 +91,21 @@ class EditProfileViewModel: ObservableObject {
     
     /// 変更を保存する
     func saveProfile() async {
-        guard let currentUserId = Auth.auth().currentUser?.uid else { return }
-        guard let originalUserName = self.user?.name else { return }
+        guard let currentUserId = Auth.auth().currentUser?.uid else {
+            self.errorMessage = "ログイン情報が確認できません。再度ログインしてください。"
+            return
+        }
+
+        let trimmedDisplayName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedDisplayName.isEmpty else {
+            self.errorMessage = "名前を入力してください。"
+            return
+        }
+
+        errorMessage = nil
+        didSaveProfile = false
         isLoading = true
+        defer { isLoading = false }
         var newImageUrl: String?
         
         do {
@@ -92,7 +118,7 @@ class EditProfileViewModel: ObservableObject {
             // 2. Firestoreのユーザー情報を更新
             try await userService.updateUserProfile(
                 userId: currentUserId,
-                name: displayName,
+                name: trimmedDisplayName,
                 bio: bio,
                 newProfileImageUrl: newImageUrl
             )
@@ -108,20 +134,24 @@ class EditProfileViewModel: ObservableObject {
                 }
             }
             
+            self.user?.name = trimmedDisplayName
+            self.user?.bio = bio
+            if let newImageUrl {
+                self.user?.profileImageUrl = newImageUrl
+            }
+            self.displayName = trimmedDisplayName
             self.didSaveProfile = true
             
         }catch {
             // どの種類のエラーが発生したかを判別する
             if let storageError = error as? StorageError, storageError == .imageDataConversionFailed {
                 // もし画像変換エラーだったら、ユーザーに分かりやすいメッセージを表示
-                print("画像の変換に失敗しました。")
-                // self.message = "画像のフォーマットに問題がある可能性があります。別の写真をお試しください。"
+                self.errorMessage = "プロフィール画像の変換に失敗しました。別の画像でお試しください。"
             } else {
                 // それ以外のエラー
-                print("Error saving profile: \(error.localizedDescription)")
+                self.errorMessage = "プロフィールの保存に失敗しました: \(error.localizedDescription)"
             }
         }
-        isLoading = false
     }
     /// ログアウト処理
     func logout() {

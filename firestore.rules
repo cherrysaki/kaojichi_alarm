@@ -1,0 +1,47 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isSelf(userId);
+
+      match /friends/{friendId} {
+        allow read: if isSignedIn();
+        allow create, update, delete: if isSignedIn()
+          && (request.auth.uid == userId || request.auth.uid == friendId);
+      }
+    }
+
+    match /friend_requests/{requestId} {
+      allow read: if isSignedIn()
+        && (resource.data.fromId == request.auth.uid || resource.data.toId == request.auth.uid);
+
+      allow create: if isSignedIn()
+        && request.resource.data.fromId == request.auth.uid
+        && request.resource.data.toId is string
+        && request.resource.data.status == "pending";
+
+      allow delete: if isSignedIn()
+        && (resource.data.fromId == request.auth.uid || resource.data.toId == request.auth.uid);
+
+      allow update: if false;
+    }
+
+    match /posts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+  }
+}

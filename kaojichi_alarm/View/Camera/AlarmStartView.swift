@@ -24,13 +24,11 @@ struct AlarmStartView: View {
                     .ignoresSafeArea()
                 
                 VStack {
-                    if alarmService.isAlarmOn {
-                        if let currentAlarm = alarmService.currentAlarm {
-                            if !currentAlarm.isWakeup || !currentAlarm.isLeave {
-                                AlarmPrepareView()
-                            } else {
-                                AlarmDoneView()
-                            }
+                    if let currentAlarm = alarmService.currentAlarm {
+                        if currentAlarm.isWakeup && currentAlarm.isLeave {
+                            completedAlarmView
+                        } else if currentAlarm.isOn {
+                            AlarmPrepareView()
                         } else {
                             noAlarmView
                         }
@@ -44,20 +42,11 @@ struct AlarmStartView: View {
             }
             .onAppear {
                 alarmService.fetchAlarms()
-                
-                if alarmService.getTodayAlarm() == nil {
-                    alarmService.isAlarmOn = false
+
+                if let todayAlarm = alarmService.getTodayAlarm() {
+                    alarmService.isAlarmOn = todayAlarm.isOn
                 } else {
-                    alarmService.isAlarmOn = true
-                    
-                    if let currentAlarm = alarmService.currentAlarm {
-                        alarmService.updateAlarmStatus(
-                            id: currentAlarm.id,
-                            isOn: true,
-                            isWakeup: false,
-                            isLeave: false
-                        )
-                    }
+                    alarmService.isAlarmOn = false
                 }
                 
                 UserDefaults.standard.set(alarmService.isAlarmOn, forKey: "isAlarmOn")
@@ -116,6 +105,43 @@ struct AlarmStartView: View {
             .padding(.horizontal, 24)
             .padding(.top, 8)
             
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black)
+    }
+
+    private var completedAlarmView: some View {
+        VStack(spacing: 20) {
+            Spacer()
+
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 52))
+                .foregroundColor(.orange)
+
+            Text("今日のアラームは完了しました")
+                .font(.title3.weight(.semibold))
+                .foregroundColor(.white)
+
+            Text("起床と出発の投稿が完了しています。")
+                .font(.body)
+                .foregroundColor(.white.opacity(0.7))
+                .multilineTextAlignment(.center)
+
+            Button {
+                dismiss()
+            } label: {
+                Text("タイムラインに戻る")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(Color(hex: "FF8300"))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 8)
+
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

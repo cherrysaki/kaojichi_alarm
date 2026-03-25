@@ -32,25 +32,29 @@ class UserProfileViewModel: ObservableObject {
         // deferブロックは、この関数がどんな形で終了しても（returnやエラーでも）最後に必ず実行される
         defer { isLoading = false }
         
-        if await UserService.shared.checkIfFriends(userId1: currentUserId, userId2: profileUser.id) {
-            self.friendshipStatus = .friends
-        } else {
-            do {
-                if let request = try await UserService.shared.checkFriendRequestStatus(from: currentUserId, to: profileUser.id) {
-                    if request.fromId == currentUserId {
-                        self.sentRequest = request
-                        self.friendshipStatus = .requestSent
-                    } else {
-                        self.receivedRequest = request
-                        self.friendshipStatus = .requestReceived
-                    }
-                } else {
-                    self.friendshipStatus = .none
-                }
-            } catch {
-                print("Error checking friend request status: \(error.localizedDescription)")
+        do {
+            async let friendIdsTask = UserService.shared.fetchFriendIds(forUserId: currentUserId)
+            async let sentRequestsTask = UserService.shared.fetchSentFriendRequests(for: currentUserId)
+            async let incomingRequestsTask = UserService.shared.fetchIncomingFriendRequests(for: currentUserId)
+
+            let friendIds = try await friendIdsTask
+            let sentRequests = try await sentRequestsTask
+            let incomingRequests = try await incomingRequestsTask
+
+            if friendIds.contains(profileUser.id) {
+                self.friendshipStatus = .friends
+            } else if let request = sentRequests.first(where: { $0.toId == profileUser.id }) {
+                self.sentRequest = request
+                self.friendshipStatus = .requestSent
+            } else if let request = incomingRequests.first(where: { $0.fromId == profileUser.id }) {
+                self.receivedRequest = request
+                self.friendshipStatus = .requestReceived
+            } else {
                 self.friendshipStatus = .none
             }
+        } catch {
+            print("Error checking friend request status: \(error.localizedDescription)")
+            self.friendshipStatus = .none
         }
     }
     

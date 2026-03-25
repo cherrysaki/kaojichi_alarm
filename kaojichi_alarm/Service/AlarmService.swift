@@ -26,6 +26,8 @@ class AlarmService: ObservableObject {
     @Published var currentAlarm: AlarmData?
     private var timer: Timer?
     private var alarmTimer: Timer?
+    private let wakeupNotificationInterval: TimeInterval = 5
+    private let maxWakeupNotificationCount = 60
     @Published var isAlarmPlaying = false
     @Published var isAlarmOn: Bool = UserDefaults.standard.value(forKey: "isAlarmOn") as? Bool ?? false
     @Published var isWakeup: Bool = false
@@ -99,12 +101,27 @@ class AlarmService: ObservableObject {
     func updateAlarm(id: String, date: Date, wakeUpTime: Date, leaveTime: Date,isOn:Bool) {
         // alarms配列から更新対象のアラーム（への参照）を探す
             if let alarmToUpdate = alarms.first(where: { $0.id == id }) {
+                let previousIsOn = alarmToUpdate.isOn
+                let shouldResetProgress =
+                    isOn && (
+                        !previousIsOn ||
+                        alarmToUpdate.date != date ||
+                        alarmToUpdate.wakeUpTime != wakeUpTime ||
+                        alarmToUpdate.leaveTime != leaveTime
+                    )
                 
                 // 参照している元のオブジェクトのプロパティを直接変更する
                 alarmToUpdate.date = date
                 alarmToUpdate.wakeUpTime = wakeUpTime
                 alarmToUpdate.leaveTime = leaveTime
                 alarmToUpdate.isOn = isOn //ついか
+                if shouldResetProgress {
+                    alarmToUpdate.isWakeup = false
+                    alarmToUpdate.isLeave = false
+                    UserDefaults.standard.removeObject(forKey: "wakeupImage")
+                    UserDefaults.standard.removeObject(forKey: "wakeupImageData")
+                    UserDefaults.standard.removeObject(forKey: "wakeupStatusPostId_\(alarmToUpdate.id)")
+                }
                 
                 // 変更を保存し、配列を更新する
                 saveAndFetchAlarms()
@@ -141,20 +158,24 @@ class AlarmService: ObservableObject {
         if let alarmToDelete = alarms.first(where: { $0.id == id }) {
             context.delete(alarmToDelete)
             saveAndFetchAlarms() // 変更点 5
-            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [id])
+            let notificationIDs = wakeupNotificationRequestIDs(for: alarmToDelete)
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: notificationIDs)
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: notificationIDs)
             startMonitoring()
         }
     }
     
     /// アラーム音を停止
-    func stopAlarm() {
+    func stopAlarm(for alarm: AlarmData? = nil) {
         alarmTimer?.invalidate()
         alarmTimer = nil
         isAlarmPlaying = false
         print("🔕 アラーム音を停止しました")
         
-        if let currentAlarm = currentAlarm {
-            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [currentAlarm.id])
+        if let alarm {
+            let notificationIDs = wakeupNotificationRequestIDs(for: alarm)
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: notificationIDs)
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: notificationIDs)
         }
     }
     
@@ -247,7 +268,7 @@ class AlarmService: ObservableObject {
         guard let todayAlarm = getTodayAlarm() else { return }
         currentAlarm = todayAlarm
         
-        timer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
             self?.checkAlarmTime()
         }
         
@@ -257,115 +278,32 @@ class AlarmService: ObservableObject {
     
     //タイマー停止
     private func stopMonitoring() {
+        let alarmToStop = currentAlarm
         timer?.invalidate()
         timer = nil
+        stopAlarm(for: alarmToStop) // アラーム音も停止し通知もキャンセル
         currentAlarm = nil
-        stopAlarm() // アラーム音も停止し通知もキャンセル
     }
     
     //アラーム時間になったかをチェック
     private func checkAlarmTime() {
-//        guard let alarm = currentAlarm else { return }
-//        
-//        var postService = PostService()
-//        
-//        let now = Date()
-//        var calendar = Calendar.current
-//        
-//        //        if let jstTimeZone = TimeZone(identifier: "Asia/Tokyo") {
-//        //            calendar.timeZone = jstTimeZone
-//        //        }
-//        //
-//        // 日付と時刻を比較
-//        let nowComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: now)
-//        let alarmDateComponents = calendar.dateComponents([.year, .month, .day], from: alarm.date)
-//        let alarmTimeComponents = calendar.dateComponents([.hour, .minute], from: alarm.wakeUpTime)
-//        
-//        // 日付が一致し、時刻も一致したらアラームを鳴らす
-//        if nowComponents.year == alarmDateComponents.year &&
-//            nowComponents.month == alarmDateComponents.month &&
-//            nowComponents.day == alarmDateComponents.day &&
-//            nowComponents.hour == alarmTimeComponents.hour &&
-//            nowComponents.minute == alarmTimeComponents.minute {
-//            startAlarmSound()
-//        }
-//        
+        guard let alarm = getTodayAlarm() else {
+            if isAlarmPlaying {
+                stopAlarm()
+            }
+            return
+        }
 
-//        // -----------------------------------------
-//        // 追加: 出発時刻から5分過ぎたか判定
-//        // -----------------------------------------
-//        let fiveMinutesAgo = now.addingTimeInterval(-5 * 60) // 現在時刻から5分前
-//        let leaveComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: alarm.leaveTime)
-//        let fiveMinutesAgoComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: fiveMinutesAgo)
-//        
-//        if leaveComponents.year == fiveMinutesAgoComponents.year &&
-//            leaveComponents.month == fiveMinutesAgoComponents.month &&
-//            leaveComponents.day == fiveMinutesAgoComponents.day &&
-//            leaveComponents.hour == fiveMinutesAgoComponents.hour &&
-//            leaveComponents.minute == fiveMinutesAgoComponents.minute &&
-//            !alarm.isLeave {
-//            
-//            if alarm.isWakeup { // 起床はできている→寝顔写真を自動投稿
-//                print("⏰ 出発時刻から5分過ぎました。寝顔写真を自動投稿します")
-//                
-//                Task {
-//                    if let imageData = UserDefaults.standard.data(forKey: "wakeupImage") {
-//                        do {
-//                            try await postService.uploadPost(imageData: imageData, comment: "寝顔写真", completion: { _ in
-//                                print("wakeup.jpgを投稿しました")
-//                            })
-//                        } catch {
-//                            print("❌ 自動投稿に失敗: \(error)")
-//                        }
-//                    } else {
-//                        print("❌ wakeupImage が見つかりません")
-//                    }
-//                }
-//                
-//            } else { // 起床もできていない→見られたくない写真を自動投稿
-//                print("⏰ 出発時刻から5分過ぎました。顔質写真を自動投稿します")
-//                
-//                Task {
-//                    // 画像を取得（UserDefaults または ViewModel）
-//                    //                       var imageToPost: Data?
-//                    
-//                    // まず EditProfileViewModel の hitozichiImage を利用
-//                    if  let imageToPost = UserDefaults.standard.data(forKey: "hitozichiImage"){
-//                    
-//                    
-//                        let image = UIImage(data:imageToPost)
-//                        
-//                        if let imageData = image!.jpegData(compressionQuality: 0.8) {
-//                            do {
-//                                try await postService.uploadPost(imageData: imageData, comment: "出発前写真", completion: { _ in
-//                                    print("hitozichiImage を投稿しました")
-//                                })
-//                            } catch {
-//                                print("❌ 自動投稿に失敗: \(error)")
-//                            }
-//                        } else {
-//                            print("❌ 投稿する画像がありません")
-//                        }
-//                    }else{
-//                        if let imageData = UIImage(imageLiteralResourceName: "person").jpegData(compressionQuality: 0.8) {
-//                            do {
-//                                try await postService.uploadPost(imageData: imageData, comment: "出発前写真", completion: { _ in
-//                                    print("hitozichiImage を投稿しました")
-//                                })
-//                            } catch {
-//                                print("❌ 自動投稿に失敗: \(error)")
-//                            }
-//                        } else {
-//                            print("❌ 投稿する画像がありません")
-//                        }
-//                    }
-//                    
-//                    
-//                    
-//                }
-//            }
-//        }
+        currentAlarm = alarm
 
+        let now = Date()
+        let shouldRingWakeupAlarm = alarm.isOn && !alarm.isWakeup && now >= alarm.wakeUpTime
+
+        if shouldRingWakeupAlarm {
+            startAlarmSound()
+        } else if isAlarmPlaying {
+            stopAlarm()
+        }
     }
     
     // アラーム音を繰り返し再生開始
@@ -396,40 +334,95 @@ class AlarmService: ObservableObject {
     
     /// ローカル通知をスケジュール (30秒間音付き)
     func scheduleNotification(for alarm: AlarmData) {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [alarm.id])//以下
+        let notificationIDs = wakeupNotificationRequestIDs(for: alarm)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: notificationIDs)
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: notificationIDs)
 
-            guard alarm.isOn else {
-                print("アラームがオフのため、通知はスケジュールされません。")
-                return
-            }//以上
+        guard alarm.isOn else {
+            print("アラームがオフのため、通知はスケジュールされません。")
+            return
+        }
+        guard !alarm.isWakeup && !alarm.isLeave else {
+            print("起床後のため、通知はスケジュールされません。")
+            return
+        }
         if alarm.wakeUpTime == alarm.leaveTime {
             return
         }
         
-        let content = UNMutableNotificationContent()
-        content.title = "アラーム"
-        content.body = "起床時間です！"
-        content.sound = UNNotificationSound.defaultCritical
+        let notificationDates = wakeupNotificationDates(for: alarm)
+        guard !notificationDates.isEmpty else { return }
         
         let calendar = Calendar.current
-        var dateComponents = calendar.dateComponents([.year, .month, .day], from: alarm.date)
-        let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: alarm.wakeUpTime)
+
+        for (index, notificationDate) in notificationDates.enumerated() {
+            let content = UNMutableNotificationContent()
+            content.title = "アラーム"
+            content.body = "起床写真を撮影してください。撮るまで通知します。"
+            content.sound = .default
+            content.interruptionLevel = .timeSensitive
+
+            let dateComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: notificationDate)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+            let request = UNNotificationRequest(
+                identifier: notificationID(for: alarm, index: index),
+                content: content,
+                trigger: trigger
+            )
+            
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("通知のスケジューリングに失敗しました: \(error)")
+                } else {
+                    print("🔔 ローカル通知をスケジュールしました: \(request.identifier)")
+                }
+            }
+        }
+    }
+
+    private func wakeupNotificationDates(for alarm: AlarmData) -> [Date] {
+        guard let wakeupDate = combinedDate(for: alarm.wakeUpTime, onSameDayAs: alarm.date) else { return [] }
+        guard let leaveDate = combinedDate(for: alarm.leaveTime, onSameDayAs: alarm.date) else { return [wakeupDate] }
+
+        let now = Date()
+        let endDate = max(wakeupDate, leaveDate)
+        var nextDate = wakeupDate
+
+        if now > wakeupDate {
+            let elapsed = now.timeIntervalSince(wakeupDate)
+            let completedIntervals = Int(elapsed / wakeupNotificationInterval)
+            nextDate = wakeupDate.addingTimeInterval(Double(completedIntervals + 1) * wakeupNotificationInterval)
+        }
+
+        var dates: [Date] = []
+        while nextDate <= endDate && dates.count < maxWakeupNotificationCount {
+            dates.append(nextDate)
+            nextDate = nextDate.addingTimeInterval(wakeupNotificationInterval)
+        }
+
+        if dates.isEmpty && wakeupDate > now {
+            dates.append(wakeupDate)
+        }
+
+        return dates
+    }
+
+    private func combinedDate(for time: Date, onSameDayAs date: Date) -> Date? {
+        let calendar = Calendar.current
+        var dateComponents = calendar.dateComponents([.year, .month, .day], from: date)
+        let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: time)
         dateComponents.hour = timeComponents.hour
         dateComponents.minute = timeComponents.minute
         dateComponents.second = timeComponents.second ?? 0
-        
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-        
-        let request = UNNotificationRequest(identifier: alarm.id, content: content, trigger: trigger)
-        
-        // 通知をスケジュール
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("通知のスケジューリングに失敗しました: \(error)")
-            } else {
-                print("🔔 ローカル通知をスケジュールしました: \(alarm.id)")
-            }
-        }
+        return calendar.date(from: dateComponents)
+    }
+
+    private func wakeupNotificationRequestIDs(for alarm: AlarmData) -> [String] {
+        (0..<maxWakeupNotificationCount).map { notificationID(for: alarm, index: $0) }
+    }
+
+    private func notificationID(for alarm: AlarmData, index: Int) -> String {
+        "\(alarm.id)-wakeup-\(index)"
     }
 }
 

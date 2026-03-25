@@ -39,7 +39,7 @@ struct CameraImageCheckView: View {
                 Color.black.ignoresSafeArea()
                 
                 VStack(spacing: 20) {
-                    Text(alarmService.currentAlarm!.isWakeup ? "準備間に合ったね！" : "確認してね！")
+                    Text(isWakeupnow ? "準備間に合ったね！" : "確認してね！")
                         .font(.title)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
@@ -87,11 +87,11 @@ struct CameraImageCheckView: View {
                     
                     // 下部ボタン
 
-                if alarmService.currentAlarm!.isWakeup {
+                if isWakeupnow {
 
                         // 出発時のボタン
                         Button(action: {
-                            handlePost(isLeave: true)
+                            handlePost()
                         }) {
                             HStack {
                                 Text("送信")
@@ -108,7 +108,7 @@ struct CameraImageCheckView: View {
 
                         // 起床時のボタン
                         Button(action: {
-                            handlePost(isLeave: false)
+                            handlePost()
                         }) {
                             HStack {
                                 Text("投稿して次に進む")
@@ -154,11 +154,17 @@ struct CameraImageCheckView: View {
 
 
     /// 投稿処理を共通化するメソッド
-    private func handlePost(isLeave: Bool) {
+    private func handlePost() {
+        guard let currentAlarm = alarmService.currentAlarm else {
+            cameraviewmodel.isCameraOn = true
+            dismiss()
+            return
+        }
+        let wakeupStatusPostIdKey = "wakeupStatusPostId_\(currentAlarm.id)"
 
-        if alarmService.currentAlarm!.isWakeup {
+        if isWakeupnow {
 
-            if var image = CapturedImage{
+            if var image = CapturedImage {
                 let targetSize = CGSize(width: 2024, height: 2024)
                 image = image.preparingThumbnail(of: targetSize) ?? image
 
@@ -166,10 +172,10 @@ struct CameraImageCheckView: View {
 
                     defaults.synchronize()
                     alarmService.isAlarmOn = false
+                    alarmService.currentAlarm?.isOn = false
                     alarmService.currentAlarm?.isLeave = true
-                    defaults.set(nil, forKey: "wakeupImageData")
                     defaults.set(alarmService.isAlarmOn, forKey: "isAlarmOn")
-                    alarmService.updateAlarmStatus(id: alarmService.currentAlarm!.id, isOn: true, isWakeup: true, isLeave: true)
+                    alarmService.updateAlarmStatus(id: currentAlarm.id, isOn: false, isWakeup: true, isLeave: true)
                     alarmService.stopAlarm()
 
                     isUploading = true
@@ -178,6 +184,12 @@ struct CameraImageCheckView: View {
                             try await postService.uploadPost(imageData: imageData, comment: selectedComment, status: .isLeave, completion: { _ in
                                 print("a")
                             })
+                            if let wakeupStatusPostId = defaults.string(forKey: wakeupStatusPostIdKey) {
+                                try? await postService.deletePost(postId: wakeupStatusPostId)
+                                defaults.removeObject(forKey: wakeupStatusPostIdKey)
+                            }
+                            defaults.removeObject(forKey: "wakeupImage")
+                            defaults.removeObject(forKey: "wakeupImageData")
                         } catch {
                             print("❌ バックグラウンドでの投稿に失敗しました: \(error.localizedDescription)")
                         }
@@ -186,17 +198,10 @@ struct CameraImageCheckView: View {
                         alarmService.shouldReturnToTimeline = true
                     }
                 }
-            } else{
+            } else {
 
-                // 出発時：アラーム関連の状態をリセットして画面を閉じる
-                alarmService.isAlarmOn = false
-                alarmService.currentAlarm?.isLeave = true
-                defaults.set(nil, forKey: "wakeupImageData")
-                defaults.set(alarmService.isAlarmOn, forKey: "isAlarmOn")
-                alarmService.updateAlarmStatus(id: alarmService.currentAlarm!.id, isOn: true, isWakeup: true, isLeave: true)
-                alarmService.stopAlarm()
+                cameraviewmodel.isCameraOn = true
                 dismiss()
-
             }
         } else {
 
@@ -205,23 +210,23 @@ struct CameraImageCheckView: View {
                let imageData = image.jpegData(compressionQuality: 0.8) {
 
                 // アラーム関連の状態をリセット
+                defaults.removeObject(forKey: "wakeupImageData")
                 defaults.set(imageData, forKey: "wakeupImage")
                 defaults.synchronize()
                 alarmService.currentAlarm?.isWakeup = true
-                alarmService.updateAlarmStatus(id: alarmService.currentAlarm!.id, isOn: true, isWakeup: true, isLeave: false)
+                alarmService.updateAlarmStatus(id: currentAlarm.id, isOn: true, isWakeup: true, isLeave: false)
                 alarmService.stopAlarm()
 
                 isUploading = true
                 Task {
                     do {
-                        try await postService.uploadOriginalImage(imageData: imageData)
-
                         // 投稿用は必ずwakeup.jpg
                         if let fixedImage = UIImage(named: "wakeup"),
                            let fixedImageData = fixedImage.jpegData(compressionQuality: 0.8) {
-                            try await postService.uploadPost(imageData: fixedImageData, comment: selectedComment, status: .isWakeup, completion: { _ in
+                            let postId = try await postService.uploadPost(imageData: fixedImageData, comment: selectedComment, status: .isWakeup, completion: { _ in
                                 print("wakeup.jpgを投稿しました")
                             })
+                            defaults.set(postId, forKey: wakeupStatusPostIdKey)
                         } else {
                             print("❌ wakeup.jpgが見つからないかJPEG変換に失敗しました。")
                         }

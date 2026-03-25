@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>app.hakuu.mukimuki.picture-alarm-app.background.v2</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -9,7 +13,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.97584677117-0cvlf6blibvq3fdkm4k9ghusu9o24iut</string>
+				<string>com.googleusercontent.apps.818505292700-4h9ihj8hoghaksrm1idgvm6gpkcfvchh</string>
 			</array>
 		</dict>
 	</array>

@@ -10,6 +10,8 @@ struct User: Identifiable, Codable {
     var name_lowercase: String?
     var profileImageUrl: String?
     var bio: String?
+    var latestStatus: String?
+    var latestStatusUpdatedAt: Timestamp?
 }
 
 // ユーザーのビューモデル
@@ -17,14 +19,34 @@ class UserService {
     static let shared = UserService()
     private let db = Firestore.firestore()
     private init() {}
+
+    private func resolvedDisplayName(for authData: FirebaseAuth.User) -> String {
+        let trimmedDisplayName = authData.displayName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !trimmedDisplayName.isEmpty {
+            return trimmedDisplayName
+        }
+
+        if let emailPrefix = authData.email?
+            .split(separator: "@")
+            .first?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !emailPrefix.isEmpty {
+            return emailPrefix
+        }
+
+        return "ユーザー"
+    }
     
     /// Authで作成されたユーザー情報をFirestoreに保存する
     func saveUser(authData: FirebaseAuth.User, name: String) async throws {
+        let resolvedName = name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? resolvedDisplayName(for: authData)
+            : name.trimmingCharacters(in: .whitespacesAndNewlines)
         let user = User(
             id: authData.uid,
-            name: name,
+            name: resolvedName,
             createAt: Timestamp(),
-            name_lowercase: name.lowercased() // 検索用の小文字の名前も保持
+            name_lowercase: resolvedName.lowercased() // 検索用の小文字の名前も保持
         )
         
         // Firestoreに保存するための辞書データを作成
@@ -37,6 +59,39 @@ class UserService {
         
         // ドキュメントIDをAuthのUIDと一致させて保存
         try await db.collection("users").document(user.id).setData(userData)
+    }
+
+    func ensureUserExists(authData: FirebaseAuth.User) async throws {
+        let userRef = db.collection("users").document(authData.uid)
+        let snapshot = try await userRef.getDocument()
+        let resolvedName = resolvedDisplayName(for: authData)
+
+        guard let data = snapshot.data() else {
+            try await saveUser(authData: authData, name: resolvedName)
+            return
+        }
+
+        var updates: [String: Any] = [:]
+
+        if (data["id"] as? String)?.isEmpty != false {
+            updates["id"] = authData.uid
+        }
+
+        let existingName = (data["name"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if existingName.isEmpty {
+            updates["name"] = resolvedName
+            updates["name_lowercase"] = resolvedName.lowercased()
+        } else if data["name_lowercase"] == nil {
+            updates["name_lowercase"] = existingName.lowercased()
+        }
+
+        if data["createAt"] == nil {
+            updates["createAt"] = Timestamp(date: Date())
+        }
+
+        if !updates.isEmpty {
+            try await userRef.setData(updates, merge: true)
+        }
     }
     
     /// 友達申請を送る
@@ -92,6 +147,25 @@ class UserService {
         }
         return requests
     }
+
+    /// 自分から送ったpendingの友達申請リストを取得する
+    func fetchSentFriendRequests(for userId: String) async throws -> [FriendRequest] {
+        let snapshot = try await db.collection("friend_requests")
+            .whereField("fromId", isEqualTo: userId)
+            .whereField("status", isEqualTo: "pending")
+            .getDocuments()
+
+        return snapshot.documents.compactMap { doc in
+            let data = doc.data()
+            return FriendRequest(
+                id: doc.documentID,
+                fromId: data["fromId"] as? String ?? "",
+                toId: data["toId"] as? String ?? "",
+                status: data["status"] as? String ?? "",
+                createdAt: data["createdAt"] as? Timestamp ?? Timestamp()
+            )
+        }
+    }
     
     /// ユーザー名（完全一致・大文字小文字を区別しない）でユーザーを検索する
     func searchUsers(byName nameQuery: String) async throws -> [User] {
@@ -119,7 +193,9 @@ class UserService {
                             createAt: data["createAt"] as? Timestamp ?? Timestamp(),
                             name_lowercase: data["name_lowercase"] as? String ?? "",
                             profileImageUrl: data["profileImageUrl"] as? String ?? "",
-                            bio: data["bio"] as? String ?? ""
+                            bio: data["bio"] as? String ?? "",
+                            latestStatus: data["latestStatus"] as? String,
+                            latestStatusUpdatedAt: data["latestStatusUpdatedAt"] as? Timestamp
                         )
         }
         return users
@@ -143,52 +219,12 @@ class UserService {
                         createAt: data["createAt"] as? Timestamp ?? Timestamp(),
                         name_lowercase: data["name_lowercase"] as? String ?? "",
                         profileImageUrl: data["profileImageUrl"] as? String ?? "",
-                        bio: data["bio"] as? String ?? ""
+                        bio: data["bio"] as? String ?? "",
+                        latestStatus: data["latestStatus"] as? String,
+                        latestStatusUpdatedAt: data["latestStatusUpdatedAt"] as? Timestamp
                     )
                 
         }
-    /// 2人のユーザーが既に友達かどうかをチェックする
-    func checkIfFriends(userId1: String, userId2: String) async -> Bool {
-        let docRef = db.collection("users").document(userId1).collection("friends").document(userId2)
-        do {
-            return try await docRef.getDocument().exists
-        } catch {
-            return false
-        }
-    }
-    
-    /// 2人のユーザー間の友達申請の状態をチェックする
-    func checkFriendRequestStatus(from userId1: String, to userId2: String) async throws -> FriendRequest? {
-        // A -> B のリクエスト
-        let query1 = db.collection("friend_requests")
-            .whereField("fromId", isEqualTo: userId1)
-            .whereField("toId", isEqualTo: userId2)
-        
-        // B -> A のリクエスト
-        let query2 = db.collection("friend_requests")
-            .whereField("fromId", isEqualTo: userId2)
-            .whereField("toId", isEqualTo: userId1)
-        
-        let snapshot1 = try await query1.getDocuments()
-        if let doc = snapshot1.documents.first { return createRequest(from: doc) }
-        
-        let snapshot2 = try await query2.getDocuments()
-        if let doc = snapshot2.documents.first { return createRequest(from: doc) }
-        
-        return nil
-    }
-    
-    // `checkFriendRequestStatus`が使うヘルパー関数
-    private func createRequest(from doc: QueryDocumentSnapshot) -> FriendRequest {
-        let data = doc.data()
-        return FriendRequest(
-            id: doc.documentID,
-            fromId: data["fromId"] as? String ?? "",
-            toId: data["toId"] as? String ?? "",
-            status: data["status"] as? String ?? "",
-            createdAt: data["createdAt"] as? Timestamp ?? Timestamp()
-        )
-    }
     //FriendsView用
     func fetchFriendIds(forUserId userId: String) async throws -> [String] {
         let snapshot = try await db.collection("users").document(userId).collection("friends").getDocuments()
@@ -236,4 +272,3 @@ class UserService {
             try await db.collection("users").document(userId).delete()
         }
 }
-

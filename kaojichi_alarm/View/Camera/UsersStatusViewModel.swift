@@ -25,8 +25,8 @@ class UserStatusViewModel: ObservableObject {
     @Published var isWakeupUsers:[RappUserStatusInfo] = []
     @Published var isLeaveUsers:[RappUserStatusInfo] = []
     
-    private let db = Firestore.firestore()
     private let userService = UserService.shared
+    private var userCache: [String: User] = [:]
     
     init() {
 //        fetchUsersStatus()
@@ -66,13 +66,8 @@ class UserStatusViewModel: ObservableObject {
                     return
                 }
                 
-                
-                let snapshot = try await db.collection("posts")
-                    .whereField("userId", in: friendIds)
-                    .getDocuments()
-                
                 var latestStatus: [String: RappUserStatusInfo] = [:]
-                var usersWithPostToday = Set<String>()
+                var fetchedUsers: [String: User] = [:]
 
                 await withTaskGroup(of: (String, User?).self) { group in
                     for userId in friendIds {
@@ -83,46 +78,28 @@ class UserStatusViewModel: ObservableObject {
                     }
 
                     for await (userId, user) in group {
-                        latestStatus[userId] = RappUserStatusInfo(
-                            id: userId,
-                            user: user,
-                            status: .noActions
-                        )
+                        if let user {
+                            fetchedUsers[userId] = user
+                            self.userCache[userId] = user
+                        }
                     }
                 }
 
-                let sortedDocuments = snapshot.documents.sorted {
-                    let lhs = ($0.data()["postTime"] as? Timestamp)?.dateValue() ?? .distantPast
-                    let rhs = ($1.data()["postTime"] as? Timestamp)?.dateValue() ?? .distantPast
-                    return lhs > rhs
-                }
+                for userId in friendIds {
+                    let user = fetchedUsers[userId] ?? userCache[userId]
+                    let latestStatusDate = user?.latestStatusUpdatedAt?.dateValue()
+                    let isTodayStatus =
+                        latestStatusDate.map { $0 >= startOfToday && $0 < startOfTomorrow } ?? false
+                    let status =
+                        isTodayStatus
+                        ? UserStatus(rawValue: user?.latestStatus ?? "") ?? .noActions
+                        : .noActions
 
-                for doc in sortedDocuments {
-                    // 3. アプリ側でフィルタリングし、各ユーザーの「今日の最新投稿」を1件だけ取り出す
-                   
-                    
-                    // ドキュメントをループ処理
-         
-                        let data = doc.data()
-                        
-                        // postTimeをDateに変換
-                        guard let timestamp = data["postTime"] as? Timestamp else { continue }
-                        
-                        let postDate = timestamp.dateValue()
-                        
-                        // 今日の投稿であり、まだそのユーザーの投稿を結果に追加していない場合のみ処理
-                        if postDate >= startOfToday && postDate < startOfTomorrow {
-                      
-                            guard let userId = data["userId"] as? String else { continue }
-                            guard !usersWithPostToday.contains(userId) else { continue }
-                            let rawStatus = data["status"] as? String ?? ""
-                            let status = UserStatus(rawValue: rawStatus) ?? .noActions
-                            
-                            latestStatus[userId]?.status = status
-                            usersWithPostToday.insert(userId)
-                        }
-                    
-                   
+                    latestStatus[userId] = RappUserStatusInfo(
+                        id: userId,
+                        user: user,
+                        status: status
+                    )
                 }
                 
                 await MainActor.run {
