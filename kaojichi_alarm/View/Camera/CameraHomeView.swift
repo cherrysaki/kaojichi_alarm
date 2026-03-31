@@ -30,9 +30,7 @@ struct CameraHomeView: View {
                 .frame(maxWidth: .infinity)
                 .aspectRatio(1, contentMode: .fit)
                 .clipShape(Circle())
-                .onChange(of: cameraviewmodel.isCameraOn){
-                    print("フェイストラッキング設定変更")
-                }
+                .onChange(of: cameraviewmodel.isCameraOn) { }
                 .overlay{
                     Circle()
                         .stroke(lineWidth: 5)
@@ -47,11 +45,6 @@ struct CameraHomeView: View {
                     capturedImage = image
                     
                     isShowImageCheck = true
-                    // 写真アルバムに画像を保存
-//                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-//                    print("✅ 写真を保存しました")
-                } else {
-//                    print("❌ 写真の保存に失敗しました")
                 }
             }.disabled(!cameraviewmodel.isCameraOn)
         }

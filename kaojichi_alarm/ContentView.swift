@@ -42,11 +42,6 @@ struct ContentView: View {
                         Text("プロフィール")
                     }
                 
-                //            AlarmStartView()
-                //                .tabItem {
-                //                    Image(systemName: "camera.circle.fill")
-                //                    Text("プロフィール")
-                //                }
             }
             .tint(Color(hex: "FF8300"))
             .navigationBarBackButtonHidden(true)
@@ -68,11 +63,6 @@ struct ContentView: View {
                 }
                 .padding(.bottom, 75) // 下から30ポイント上に配置
                 
-//                .popover(isPresented: .constant(true)) {
-//                    popoverView
-//                        .presentationCompactAdaptation(PresentationAdaptation.popover)
-//                        .offset(y: -75)
-//                }
             }
             
         }
@@ -91,17 +81,6 @@ struct ContentView: View {
             Text("投稿が完了しました！")
         }
         .onAppear{
-//            if alarmService.isWakeupnow && alarmService.currentAlarm != nil{
-//                
-//                
-//                
-//            } else if !alarmService.isWakeupnow && alarmService.currentAlarm != nil{
-//                
-//                
-//            }else{
-//                
-//                isShowPopover = false
-//            }
         }
         
         
@@ -112,20 +91,6 @@ struct ContentView: View {
         
         
         VStack{
-//            if alarmService.isWakeupnow && alarmService.currentAlarm != nil{
-//                Text("出発時刻")
-//                Text(wakeuptime)
-//                
-//                
-//            } else if !alarmService.isWakeupnow && alarmService.currentAlarm != nil{
-//                
-//                Text("起床時間")
-//                Text(leaveTime)
-//                
-//            }else{
-//                Text("アラームが設定されていないよ！")
-//                //                isShowAlermStartView = false
-//            }r
         }.onAppear{
             settime()
         }

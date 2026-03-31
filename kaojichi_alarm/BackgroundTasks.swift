@@ -67,7 +67,6 @@ class BackgroundTasks {
 
            // 基準日を「昨日」ではなく「今日」にする
            guard var targetDate = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: now) else {
-               print("目標時刻の生成に失敗しました。")
                return
            }
 
@@ -80,17 +79,10 @@ class BackgroundTasks {
               // OSに「この時刻以降のできるだけ早いタイミングで実行してください」と伝える
               request.earliestBeginDate = targetDate
 
-              print("次のバックグラウンドタスクは \(targetDate) 以降にスケジュールされました。")
-              
-              // --- ここまで修正 ---
-
               do {
                   BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundTaskID)
                   try BGTaskScheduler.shared.submit(request)
-                  print("Successfully scheduled background task.")
-              } catch {
-                  print("Could not schedule background task: \(error)")
-              }
+              } catch {}
            
            
        }
@@ -98,7 +90,6 @@ class BackgroundTasks {
     //出発時刻にタスクが実行されるようにする
     @MainActor func scheduleDepaturePostSetup() {
         let now = Date()
-        print(now)
         
         guard let todayalarm =  AlarmService.shared.getTodayAlarm() else {
             scheduleDailyAlarmSetup()
@@ -117,7 +108,6 @@ class BackgroundTasks {
 
                // 今日の日付で目標時刻を生成
                guard var targetDate = calendar.date(bySettingHour: targetHour, minute: targetMinute, second: 0, of: now) else {
-                   print("目標時刻の生成に失敗しました。")
                    return
                }
 //        targetDate = calendar.date(byAdding: .hour, value: 9, to: targetDate)!
@@ -130,17 +120,10 @@ class BackgroundTasks {
            // OSに「この時刻以降のできるだけ早いタイミングで実行してください」と伝える
            request.earliestBeginDate = targetDate
 
-           print("次のバックグラウンドタスクは \(targetDate) 以降にスケジュールされました。")
-           
-           // --- ここまで修正 ---
-
            do {
                BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundTaskID)
-                try BGTaskScheduler.shared.submit(request)
-               print("Successfully scheduled background task.")
-           } catch {
-               print("Could not schedule background task: \(error)")
-           }
+               try BGTaskScheduler.shared.submit(request)
+           } catch {}
         
         
     }
@@ -151,8 +134,6 @@ class BackgroundTasks {
         task.expirationHandler = {
             completionState.finish(success: false)
         }
-
-        print("㊗️ Background task started")
 
         Task { @MainActor in
             let success: Bool
@@ -169,30 +150,20 @@ class BackgroundTasks {
        
        /// バックグラウンドで実行される実際の処理
     @MainActor func handleSetAarlm() async -> Bool {
-        print("🌅 Background task started. Setting up today's alarm.")
-
         if AlarmService.shared.getTodayAlarm() != nil {
             AlarmService.shared.startMonitoring()
-        } else {
-            print("💸 No Alarm")
         }
 
         scheduleDepaturePostSetup()
-        print("✅ Background task completed successfully.")
         return true
     }
     
     @MainActor func handledDepaturePost() async -> Bool {
-        print("💟 Background task started. posting today post.")
-
-        print("alarm check")
         guard let todayAlarm = self.alarmService.getTodayAlarm() else {
-            print("❌ Error: 実行すべきアラームが見つからず、処理を中断します。")
             return false
         }
 
         let success = await postFailurePost(alarmdata: todayAlarm)
-        print("✅ Background task completed successfully.")
 
         scheduleDailyAlarmSetup()
         return success
@@ -204,12 +175,9 @@ class BackgroundTasks {
         let postService = PostService()
         let wakeupStatusPostIdKey = "wakeupStatusPostId_\(alarmdata.id)"
         
-        print("start task")
-        
         guard alarmdata.isOn else { return true }
 
         do {
-            print("have alarm")
 
             if alarmdata.isWakeup && !alarmdata.isLeave {
                 guard let wakeupImageData = UserDefaults.standard.data(forKey: "wakeupImage")
@@ -221,11 +189,9 @@ class BackgroundTasks {
                     imageData: wakeupImageData,
                     comment: "準備が終わりませんでした、、、",
                     status: .isWakeup,
-                    completion: { _ in
-                        print("can uploard")
-                    }
+                    completion: { _ in }
                 )
-                
+
                 if let wakeupStatusPostId = UserDefaults.standard.string(forKey: wakeupStatusPostIdKey) {
                     try? await postService.deletePost(postId: wakeupStatusPostId)
                     UserDefaults.standard.removeObject(forKey: wakeupStatusPostIdKey)
@@ -245,9 +211,7 @@ class BackgroundTasks {
                     imageData: hitozichiImageData,
                     comment: "寝過ごしてしまいました、、",
                     status: .noActions,
-                    completion: { _ in
-                        print("can uploard")
-                    }
+                    completion: { _ in }
                 )
 
                 UserDefaults.standard.removeObject(forKey: "wakeupImage")
@@ -259,7 +223,6 @@ class BackgroundTasks {
 
             return true
         } catch {
-            print("❌ バックグラウンドでの投稿に失敗しました: \(error.localizedDescription)")
             return false
         }
     }

@@ -52,11 +52,8 @@ class AlarmService: ObservableObject {
         let descriptor = FetchDescriptor<AlarmData>(sortBy: [SortDescriptor(\.date)])
         do {
             self.alarms = try context.fetch(descriptor)
-            print("アラームの取得に成功: \(alarms.count)件")
         } catch {
-            print("アラームの取得に失敗: \(error)")
         }
-//        print(self.alarms)
     }
     
     /// 日毎のアラームを追加
@@ -69,7 +66,6 @@ class AlarmService: ObservableObject {
 //
         // 変更点 4: `alarmdata`を`alarms`に変更
         if let index = alarms.firstIndex(where: { calendar.isDate($0.date, inSameDayAs: date) }){
-            print("a")
             updateAlarm(
                    id: alarms[index].id,
                    date: date, // ✅ 新しい日付を正しく渡す
@@ -79,16 +75,13 @@ class AlarmService: ObservableObject {
                )
         } else {
             let alarm = AlarmData(date: date, wakeUpTime: wakeUpTime, leaveTime: leaveTime)
-            print("b")
             alarm.isOn = isOn
             context.insert(alarm)
             do {
                 try context.save()
                 let descriptor = FetchDescriptor<AlarmData>(sortBy: [SortDescriptor(\.date)])
                     self.alarms = try context.fetch(descriptor)
-                print("✅ アラームの保存に成功しました。")
             } catch {
-                print("❌ アラームの保存に失敗しました: \(error)")
             }
             
             saveAndFetchAlarms() // 変更点 5: 保存と再取得を1つのメソッドにまとめる
@@ -170,7 +163,6 @@ class AlarmService: ObservableObject {
         alarmTimer?.invalidate()
         alarmTimer = nil
         isAlarmPlaying = false
-        print("🔕 アラーム音を停止しました")
         
         if let alarm {
             let notificationIDs = wakeupNotificationRequestIDs(for: alarm)
@@ -186,36 +178,11 @@ class AlarmService: ObservableObject {
         
         var calendar = Calendar.current
 
-        if let existingAlarm = alarms.first(where: { alarm -> Bool in
-            
-            // 👇 デバッグ用のprint文を追加
-            print("DEBUG: 比較開始 ----")
-            print("  アラームの日付: \(alarm.date)")
-            print("  アラームの起床: \(alarm.wakeUpTime)")
-            print("  アラームの出発: \(alarm.leaveTime)")
-            print("  検索する日付: \(date)")
-            
-            let isMatch = Calendar.current.isDate(alarm.date, inSameDayAs: date)
-            print("  一致したか？ -> \(isMatch)")
-            print("--------------------")
-            
-            return isMatch
-            
-        }) {
-            print("✅ 一致するアラームが見つかりました: \(existingAlarm)")
+        if let existingAlarm = alarms.first(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
             return existingAlarm
         } else {
-            print("❌ 一致するアラームは見つかりませんでした。")
             return nil
         }
-        
-        // 変更点 4: `alarmdata`を`alarms`に変更
-//        if let existingAlarm = alarms.first(where: { Calendar.current.isDate($0.date, inSameDayAs: date)  }) {
-//            return existingAlarm
-//        } else {
-//
-//            return nil
-//        }
     }
     
     /// 今日のアラームを取得
@@ -254,10 +221,8 @@ class AlarmService: ObservableObject {
 //            fetchAlarms()
             let descriptor = FetchDescriptor<AlarmData>(sortBy: [SortDescriptor(\.date)])
             self.alarms = try context.fetch(descriptor)
-        } catch {
-            print("データの保存に失敗: \(error)")
-        }
-        fetchAlarms() // 保存後に必ずデータを再取得
+        } catch {}
+        fetchAlarms()
     }
     
     //タイマーで時間監視を開始
@@ -312,7 +277,6 @@ class AlarmService: ObservableObject {
         guard !isAlarmPlaying else { return }
         
         isAlarmPlaying = true
-        print("🔔 アラーム音を開始します！")
         
         // 即座に1回再生
         playSystemSound()
@@ -325,7 +289,6 @@ class AlarmService: ObservableObject {
     
     private func playSystemSound() {
 #if targetEnvironment(simulator)
-        print("🔔 アラーム音が鳴りました！")
 #else
         AudioServicesPlaySystemSound(1005) // アラーム音
 #endif
@@ -339,11 +302,9 @@ class AlarmService: ObservableObject {
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: notificationIDs)
 
         guard alarm.isOn else {
-            print("アラームがオフのため、通知はスケジュールされません。")
             return
         }
         guard !alarm.isWakeup && !alarm.isLeave else {
-            print("起床後のため、通知はスケジュールされません。")
             return
         }
         if alarm.wakeUpTime == alarm.leaveTime {
@@ -370,13 +331,7 @@ class AlarmService: ObservableObject {
                 trigger: trigger
             )
             
-            UNUserNotificationCenter.current().add(request) { error in
-                if let error = error {
-                    print("通知のスケジューリングに失敗しました: \(error)")
-                } else {
-                    print("🔔 ローカル通知をスケジュールしました: \(request.identifier)")
-                }
-            }
+            UNUserNotificationCenter.current().add(request)
         }
     }
 

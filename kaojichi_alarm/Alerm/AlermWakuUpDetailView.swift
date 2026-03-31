@@ -96,8 +96,6 @@ struct AlermWakuUpDetailView: View {
                 of: selectedDate
             ) ?? selectedDate
             
-            print("DEBUG: if文の直前のselectedDateの値 -> \(selectedDate)")
-            
             if combinedDate <= combinedLeaveTime {
                 if  Calendar.current.isDate(selectedDate, inSameDayAs: Date()) {
                     if let alarms =  AlarmService.shared.getAlarm(for: selectedDate){
@@ -120,7 +118,6 @@ struct AlermWakuUpDetailView: View {
                     let background = BackgroundTasks()
                     background.scheduleDepaturePostSetup()
                     
-                    print("a")
                 } else {
                     if let alarms =  AlarmService.shared.getAlarm(for: selectedDate){
                         AlarmService.shared.updateAlarm(
@@ -138,15 +135,9 @@ struct AlermWakuUpDetailView: View {
                         AlarmService.shared.addAlarm(date: selectedDate, wakeUpTime: combinedDate, leaveTime: combinedLeaveTime,isOn: false)
                     }
                     
-                    print("b")
                 }
-                
-                alarmStatus = .setted
-                
-                print(AlarmService.shared.getAlarm(for: selectedDate)?.date)
-                print(AlarmService.shared.getAlarm(for: selectedDate)?.wakeUpTime)
-                print(AlarmService.shared.getAlarm(for: selectedDate)?.leaveTime)
 
+                alarmStatus = .setted
             } else{
                 alarmStatus = .error
             }

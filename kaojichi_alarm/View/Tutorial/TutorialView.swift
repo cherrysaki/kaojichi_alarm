@@ -211,11 +211,6 @@ struct TutorialView: View {
                 .multilineTextAlignment(.center)
                 .foregroundColor(.themeOrange)
 
-//            Text("このあと、カメラと通知の設定を行います。")
-//                .font(.system(size: 18))
-//                .multilineTextAlignment(.center)
-//                .foregroundColor(.white.opacity(0.9))
-//                .lineSpacing(6)
         }
     }
 }

@@ -49,7 +49,7 @@ struct PermissionIntroView: View {
                         ProgressView()
                             .tint(.white)
                     } else {
-                        Text("許可してはじめる")
+                        Text("次へ")
                             .fontWeight(.bold)
                     }
                 }

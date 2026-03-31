@@ -53,10 +53,6 @@ struct EntryView: View {
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .padding(.bottom, 30)
-//                Text("ログインまたはアカウント作成")
-                    .foregroundStyle(.white)
-                    .font(.system(size: 18))
-                    .padding(.bottom, 10)
                 
                 VStack(spacing: 20) {
                     if socialAuthViewModel.isSigningIn {
@@ -93,11 +89,6 @@ struct EntryView: View {
                         .padding(.bottom, 15)
                     }
                     
-                    //                    Text("続行することで利用規約及びプライバシーポリシーに同意したとみなします")
-                    //                        .foregroundStyle(.white)
-                    //                        .font(.system(size: 15))
-                    //                        .padding(.bottom, 20)
-        
                     HStack(spacing: 2) {
                         Text("続行することで")
                             .foregroundColor(.white)
@@ -150,4 +141,3 @@ struct EntryView: View {
 #Preview {
     EntryView()
 }
-//developに統合するために無駄に書いたよ！

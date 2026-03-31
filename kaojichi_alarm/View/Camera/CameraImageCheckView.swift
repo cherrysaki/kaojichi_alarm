@@ -181,18 +181,14 @@ struct CameraImageCheckView: View {
                     isUploading = true
                     Task {
                         do {
-                            try await postService.uploadPost(imageData: imageData, comment: selectedComment, status: .isLeave, completion: { _ in
-                                print("a")
-                            })
+                            try await postService.uploadPost(imageData: imageData, comment: selectedComment, status: .isLeave, completion: { _ in })
                             if let wakeupStatusPostId = defaults.string(forKey: wakeupStatusPostIdKey) {
                                 try? await postService.deletePost(postId: wakeupStatusPostId)
                                 defaults.removeObject(forKey: wakeupStatusPostIdKey)
                             }
                             defaults.removeObject(forKey: "wakeupImage")
                             defaults.removeObject(forKey: "wakeupImageData")
-                        } catch {
-                            print("❌ バックグラウンドでの投稿に失敗しました: \(error.localizedDescription)")
-                        }
+                        } catch {}
                         isUploading = false
                         alarmService.showPostCompletePopup = true
                         alarmService.shouldReturnToTimeline = true
@@ -223,16 +219,10 @@ struct CameraImageCheckView: View {
                         // 投稿用は必ずwakeup.jpg
                         if let fixedImage = UIImage(named: "wakeup"),
                            let fixedImageData = fixedImage.jpegData(compressionQuality: 0.8) {
-                            let postId = try await postService.uploadPost(imageData: fixedImageData, comment: selectedComment, status: .isWakeup, completion: { _ in
-                                print("wakeup.jpgを投稿しました")
-                            })
+                            let postId = try await postService.uploadPost(imageData: fixedImageData, comment: selectedComment, status: .isWakeup, completion: { _ in })
                             defaults.set(postId, forKey: wakeupStatusPostIdKey)
-                        } else {
-                            print("❌ wakeup.jpgが見つからないかJPEG変換に失敗しました。")
                         }
-                    } catch {
-                        print("❌ 投稿処理失敗: \(error)")
-                    }
+                    } catch {}
                     isUploading = false
                     alarmService.showPostCompletePopup = true
                     alarmService.shouldReturnToTimeline = true
@@ -256,39 +246,3 @@ struct CameraImageCheckView: View {
     }
 }
 
-//#Preview {
-//    let cameraViewModel = CameraViewModel()
-//    let sampleImage = UIImage(systemName: "person.fill")
-//    
-//    VStack(spacing: 20) {
-//        
-//        VStack {
-//            Text("起床時 (isWakeupnow = false)")
-//                .font(.caption)
-//                .foregroundColor(.white)
-//            
-//            // isWakeupnow: false を直接渡して起床時ビューを生成
-//            CameraImageCheckView(
-//                cameraviewmodel: cameraViewModel,
-//                CapturedImage: .constant(sampleImage),
-//                isWakeupnow: false
-//            )
-//        }
-//        
-//        Divider()
-//        
-//        VStack {
-//            Text("出発時 (isWakeupnow = true)")
-//                .font(.caption)
-//                .foregroundColor(.white)
-//            
-//            // isWakeupnow: true を直接渡して出発時ビューを生成
-//            CameraImageCheckView(
-//                cameraviewmodel: cameraViewModel,
-//                CapturedImage: .constant(sampleImage),
-//                isWakeupnow: true
-//            )
-//        }
-//    }
-//    .background(Color.black)
-//}

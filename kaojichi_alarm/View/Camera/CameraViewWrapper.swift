@@ -20,9 +20,27 @@ struct CameraViewWrapper: View {
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            
+
+            if !cameraviewmodel.isFaceTrackingSupported {
+                VStack(spacing: 20) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.orange)
+                    Text("このデバイスでは\n顔認識機能を利用できません")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                    Text("TrueDepthカメラ搭載のiPhoneでご利用ください。")
+                        .font(.body)
+                        .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+            } else {
+
             VStack(spacing: 24) {
-                // --- 起床時刻ラベル（仮の固定表示） ---
+                // --- 起床時刻ラベル ---
                 VStack(spacing: 8) {
                     Text("起床時刻")
                         .foregroundColor(.white)
@@ -30,7 +48,7 @@ struct CameraViewWrapper: View {
                         .font(.headline)
                         .padding(.top, 60)
 
-                    Text(wakeuptime) // TODO: Firestoreやアラーム設定から取得する
+                    Text(wakeuptime)
                         .foregroundColor(.white)
                         .font(.system(size: 45))
                         .font(.system(size: 28, weight: .bold))
@@ -63,7 +81,6 @@ struct CameraViewWrapper: View {
                         self.capturedImage = snapshot
                         self.isShowingCheckView = true
                         cameraviewmodel.isCameraOn = false
-                        print("sdsdf")
                     }
                 }) {
                     if cameraviewmodel.isFaceOn {
@@ -90,6 +107,7 @@ struct CameraViewWrapper: View {
                 .padding(.horizontal, 40)
                 .padding(.bottom, 80)
             }
+            } // else
         }
         // --- 撮影後の確認画面へ遷移 ---
         .fullScreenCover(isPresented: $isShowingCheckView) {

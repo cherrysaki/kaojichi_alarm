@@ -6,14 +6,18 @@ import SwiftData
 import ARKit
 
 class CameraViewModel:ObservableObject{
-    
-    
+
+
     static let shared = CameraViewModel()
-    
+
     @Published var faceImage :UIImage?
     @Published var isCameraOn = false
     @Published var isFaceOn = false
-    
+
+    var isFaceTrackingSupported: Bool {
+        ARFaceTrackingConfiguration.isSupported
+    }
+
     // ARSCNViewへの参照を保持する
     var arScnView: ARSCNView?
 }
@@ -63,14 +67,9 @@ class CameraViewController: UIViewController,ARSCNViewDelegate,ARSessionDelegate
                 guard let self = self else { return }
                 
                 if isOn {
-                    // 必要に応じてセッションを再開するロジック
-                    // (viewDidAppearでも実行されるため、ここでは省略可能)
-                    print("isCameraOn is true.")
                     let configuration = ARFaceTrackingConfiguration()
                     self.myArSceneView.session.run(configuration)
                 } else {
-                    // isCameraOnがfalseになったらセッションを停止
-                    print("isCameraOn is false. Pausing session.")
                     self.myArSceneView.session.pause()
                 }
             }
@@ -80,9 +79,6 @@ class CameraViewController: UIViewController,ARSCNViewDelegate,ARSessionDelegate
     // ARSCNViewDelegateのメソッド
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         
-        print("b")
-        
-        print(anchor)
         // anchorが顔アンカー（ARFaceAnchor）かを確認
         guard let faceAnchor = anchor as? ARFaceAnchor,
               let device = myArSceneView.device else {
@@ -129,8 +125,6 @@ class CameraViewController: UIViewController,ARSCNViewDelegate,ARSessionDelegate
             if !isVisible {
                 
                 // セッションからアンカーを削除
-                
-                print("aa")
                 
                 DispatchQueue.main.async {
                     
