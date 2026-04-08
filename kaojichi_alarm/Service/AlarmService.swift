@@ -146,6 +146,20 @@ class AlarmService: ObservableObject {
         }
     }
     
+    func removeAllAlarms() {
+        for alarm in alarms {
+            context.delete(alarm)
+        }
+        
+        saveAndFetchAlarms()
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        stopMonitoring()
+        isAlarmOn = false
+        isWakeup = false
+        isLeave = false
+        currentAlarm = nil
+    }
+    
     /// アラーム音を停止
     func stopAlarm() {
         alarmTimer?.invalidate()

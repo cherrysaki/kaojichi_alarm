@@ -17,8 +17,10 @@ class ProfileViewModel: ObservableObject {
     @Published var friendCount = 0
     @Published var isLoading = false
     @Published var userPosts: [PostInfo] = []
+    @Published var errorMessage: String?
     
     private let userService = UserService.shared
+    private let postService = PostService()
     private let db = Firestore.firestore()
     
     func fetchUserProfile() async {
@@ -51,9 +53,20 @@ class ProfileViewModel: ObservableObject {
                         id: doc.documentID,
                         userId: data["userId"] as? String ?? "",
                         postTime: (data["postTime"] as? Timestamp)?.dateValue(),
-                        imageUrl: data["imageUrl"] as? String
+                        imageUrl: data["imageUrl"] as? String,
+                        thumbnailUrl: data["thumbnailUrl"] as? String,
+                        originalImagePath: data["originalImagePath"] as? String
                     )
                 }
             }
+    }
+    
+    func deletePost(_ post: PostInfo) async {
+        do {
+            try await postService.deletePost(postId: post.id)
+            userPosts.removeAll { $0.id == post.id }
+        } catch {
+            errorMessage = "投稿の削除に失敗しました: \(error.localizedDescription)"
+        }
     }
 }

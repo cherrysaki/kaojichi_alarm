@@ -17,6 +17,7 @@ struct ProfileView: View {
     @State private var showAddFriendView = false
     @State private var showFriendRequestView = false
     @State private var showSettingsView = false
+    @State private var postPendingDeletion: PostInfo?
     
     
     private let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 2)
@@ -122,6 +123,18 @@ struct ProfileView: View {
                                 }
                                 .aspectRatio(1, contentMode: .fit) // 正方形に
                                 .clipped()
+                                .overlay(alignment: .topTrailing) {
+                                    Button(role: .destructive) {
+                                        postPendingDeletion = post
+                                    } label: {
+                                        Image(systemName: "trash.circle.fill")
+                                            .font(.title2)
+                                            .foregroundColor(.white)
+                                            .background(Color.black.opacity(0.35))
+                                            .clipShape(Circle())
+                                    }
+                                    .padding(6)
+                                }
                             }
                         }
                     }
@@ -161,6 +174,41 @@ struct ProfileView: View {
                     await viewModel.fetchUserProfile()
                 }
             }) }
+            .alert(
+                "投稿を削除",
+                isPresented: Binding(
+                    get: { postPendingDeletion != nil },
+                    set: { if !$0 { postPendingDeletion = nil } }
+                )
+            ) {
+                Button("削除", role: .destructive) {
+                    guard let post = postPendingDeletion else { return }
+                    Task {
+                        await viewModel.deletePost(post)
+                        postPendingDeletion = nil
+                    }
+                }
+                Button("キャンセル", role: .cancel) {
+                    postPendingDeletion = nil
+                }
+            } message: {
+                Text("この投稿を削除しますか？画像と投稿データが削除されます。")
+            }
+            .alert(
+                "エラー",
+                isPresented: Binding(
+                    get: { viewModel.errorMessage != nil },
+                    set: { if !$0 { viewModel.errorMessage = nil } }
+                ),
+                actions: {
+                    Button("OK") {
+                        viewModel.errorMessage = nil
+                    }
+                },
+                message: {
+                    Text(viewModel.errorMessage ?? "")
+                }
+            )
         }
         .preferredColorScheme(.dark)
         .onAppear {

@@ -19,14 +19,20 @@ struct PostInfo: Identifiable {
     var user: User?
     var status:String? //ユーザーの起床状況
     var thumbnailUrl: String? // サムネイルURL
+    var originalImagePath: String? // オリジナル画像のStorageパス
 }
 
 class PostService {
     private let db = Firestore.firestore()
     private let storage = Storage.storage()
-    private let userService = UserService.shared
     
-    func uploadPost(imageData: Data, comment: String?, status:UserStatus, completion: @escaping (Error?) -> Void) async throws {
+    func uploadPost(
+        imageData: Data,
+        comment: String?,
+        status: UserStatus,
+        originalImagePath: String? = nil,
+        completion: @escaping (Error?) -> Void
+    ) async throws {
         
         guard let currentUser = Auth.auth().currentUser else {
             completion(NSError(domain: "PostService", code: -1, userInfo: [NSLocalizedDescriptionKey: "ユーザー未サインイン"]))
@@ -54,7 +60,7 @@ class PostService {
         let thumbRef = storage.reference().child("thumbnails/\(postRef.documentID)_400x400.jpg")
         let thumbURL = try? await thumbRef.downloadURL()
 
-        let post: [String: Any] = [
+        var post: [String: Any] = [
             "id": postRef.documentID,
             "userId": currentUser.uid,
             "postTime": FieldValue.serverTimestamp(),
@@ -64,6 +70,10 @@ class PostService {
             "comments": [comment ?? ""],
             "status": status.rawValue
         ]
+        
+        if let originalImagePath, !originalImagePath.isEmpty {
+            post["originalImagePath"] = originalImagePath
+        }
 
         do {
             try await postRef.setData(post)
@@ -74,8 +84,80 @@ class PostService {
     }
     
     
-    func uploadOriginalImage(imageData: Data) async throws {
-        let storageRef = storage.reference().child("originals/\(UUID().uuidString).jpg")
+    func uploadOriginalImage(imageData: Data) async throws -> String {
+        let path = "originals/\(UUID().uuidString).jpg"
+        let storageRef = storage.reference().child(path)
         _ = try await storageRef.putDataAsync(imageData, metadata: nil)
+        return path
+    }
+    
+    func deletePost(postId: String) async throws {
+        let snapshot = try await db.collection("posts").document(postId).getDocument()
+        guard let data = snapshot.data() else { return }
+        
+        var pathsToDelete = Set<String>()
+        
+        if let imageUrl = data["imageUrl"] as? String,
+           let path = storagePath(from: imageUrl) {
+            pathsToDelete.insert(path)
+        }
+        
+        if let thumbnailUrl = data["thumbnailUrl"] as? String,
+           let path = storagePath(from: thumbnailUrl) {
+            pathsToDelete.insert(path)
+        }
+        
+        if let originalImagePath = data["originalImagePath"] as? String,
+           !originalImagePath.isEmpty {
+            pathsToDelete.insert(originalImagePath)
+        }
+        
+        for path in pathsToDelete {
+            try await deleteStorageObject(at: path)
+        }
+        
+        try await db.collection("posts").document(postId).delete()
+    }
+    
+    func deletePosts(for userId: String) async throws {
+        let snapshot = try await db.collection("posts")
+            .whereField("userId", isEqualTo: userId)
+            .getDocuments()
+        
+        for document in snapshot.documents {
+            try await deletePost(postId: document.documentID)
+        }
+    }
+    
+    private func deleteStorageObject(at path: String) async throws {
+        let storageRef = storage.reference().child(path)
+        
+        do {
+            try await storageRef.delete()
+        } catch let error as NSError {
+            if error.domain == StorageErrorDomain,
+               error.code == StorageErrorCode.objectNotFound.rawValue {
+                return
+            }
+            throw error
+        }
+    }
+    
+    private func storagePath(from urlString: String) -> String? {
+        if urlString.hasPrefix("gs://") {
+            let trimmed = String(urlString.dropFirst("gs://".count))
+            guard let slashIndex = trimmed.firstIndex(of: "/") else { return nil }
+            return String(trimmed[trimmed.index(after: slashIndex)...])
+        }
+        
+        guard
+            let components = URLComponents(string: urlString),
+            let range = components.percentEncodedPath.range(of: "/o/")
+        else {
+            return nil
+        }
+        
+        let encodedPath = String(components.percentEncodedPath[range.upperBound...])
+        return encodedPath.removingPercentEncoding
     }
 }

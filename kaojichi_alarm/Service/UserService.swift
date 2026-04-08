@@ -213,6 +213,40 @@ class UserService {
         try await batch.commit()
     }
     
+    func deleteAllFriendRelationships(for userId: String) async throws {
+        let friendIds = try await fetchFriendIds(forUserId: userId)
+        
+        let batch = db.batch()
+        
+        for friendId in friendIds {
+            let ownFriendRef = db.collection("users").document(userId).collection("friends").document(friendId)
+            let reverseFriendRef = db.collection("users").document(friendId).collection("friends").document(userId)
+            batch.deleteDocument(ownFriendRef)
+            batch.deleteDocument(reverseFriendRef)
+        }
+        
+        try await batch.commit()
+    }
+    
+    func deleteAllFriendRequests(for userId: String) async throws {
+        let incoming = try await db.collection("friend_requests")
+            .whereField("toId", isEqualTo: userId)
+            .getDocuments()
+        
+        let outgoing = try await db.collection("friend_requests")
+            .whereField("fromId", isEqualTo: userId)
+            .getDocuments()
+        
+        let batch = db.batch()
+        let requestDocuments = incoming.documents + outgoing.documents
+        
+        for document in requestDocuments {
+            batch.deleteDocument(document.reference)
+        }
+        
+        try await batch.commit()
+    }
+    
     /// ユーザー情報を更新する
        func updateUserProfile(userId: String, name: String, bio: String?, newProfileImageUrl: String?) async throws {
            var data: [String: Any] = [
@@ -236,4 +270,3 @@ class UserService {
             try await db.collection("users").document(userId).delete()
         }
 }
-

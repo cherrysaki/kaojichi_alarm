@@ -214,12 +214,17 @@ struct CameraImageCheckView: View {
                 isUploading = true
                 Task {
                     do {
-                        try await postService.uploadOriginalImage(imageData: imageData)
+                        let originalImagePath = try await postService.uploadOriginalImage(imageData: imageData)
 
                         // 投稿用は必ずwakeup.jpg
                         if let fixedImage = UIImage(named: "wakeup"),
                            let fixedImageData = fixedImage.jpegData(compressionQuality: 0.8) {
-                            try await postService.uploadPost(imageData: fixedImageData, comment: selectedComment, status: .isWakeup, completion: { _ in
+                            try await postService.uploadPost(
+                                imageData: fixedImageData,
+                                comment: selectedComment,
+                                status: .isWakeup,
+                                originalImagePath: originalImagePath,
+                                completion: { _ in
                                 print("wakeup.jpgを投稿しました")
                             })
                         } else {

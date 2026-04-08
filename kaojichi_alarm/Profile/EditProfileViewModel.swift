@@ -40,6 +40,8 @@ class EditProfileViewModel: ObservableObject {
     private let userService = UserService.shared
     private let storageService = StorageService.shared
     private let authService = AuthService.shared
+    private let postService = PostService()
+    private let alarmService = AlarmService.shared
     
     
     init() {
@@ -134,13 +136,24 @@ class EditProfileViewModel: ObservableObject {
         isLoading = true
         
         do {
-            // 1. Storageのプロフィール画像を削除
+            // 1. 投稿と関連画像を削除
+            try await postService.deletePosts(for: currentUserId)
+            
+            // 2. フレンド関連データを削除
+            try await userService.deleteAllFriendRelationships(for: currentUserId)
+            try await userService.deleteAllFriendRequests(for: currentUserId)
+            
+            // 3. Storageのプロフィール画像を削除
             try await storageService.deleteProfileImage(for: currentUserId)
             
-            // 2. Firestoreのユーザー情報を削除
+            // 4. Firestoreのユーザー情報を削除
             try await userService.deleteUser(userId: currentUserId)
             
-            // 3. Authからアカウントを削除
+            // 5. ローカルデータを削除
+            clearLocalUserData()
+            alarmService.removeAllAlarms()
+            
+            // 6. Authからアカウントを削除
             try await authService.deleteAccount()
             
             isLoading = false
@@ -162,5 +175,21 @@ class EditProfileViewModel: ObservableObject {
                 self.errorMessage = "アカウントデータの削除中にエラーが発生しました: \(error.localizedDescription)"
             }
         }
+    }
+    
+    private func clearLocalUserData() {
+        let keysToRemove = [
+            "hitozichiImage",
+            "wakeupImage",
+            "wakeupImageData",
+            "isAlarmOn",
+            "lastScheduledDate"
+        ]
+        
+        for key in keysToRemove {
+            defaults.removeObject(forKey: key)
+        }
+        
+        defaults.synchronize()
     }
 }
